@@ -1,0 +1,63 @@
+<style type="text/css">
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+body {
+  background: #CDFFFF;
+  font: 30px sans-serif;
+}
+</style>
+<script type="text/javascript" src="http://jsrun.it/assets/1/X/K/K/1XKKp"></script>
+<script type="text/paperscript" canvas="myCanvas">
+var currentCenter = view.center,
+    moveArea = new Size(150,150),
+    balls = [],
+    numBalls = 50;
+
+function Ball(r){
+    this.radius = r;
+    this.vector = 0;
+
+    this.path = new Path.Circle({
+        center: view.center,
+        radius: this.radius,
+        fillColor:"#3498DB",
+        strokeColor:"#81E5FF",
+        strokeWidth:15,
+        blendMode:"xor"
+    });
+
+    this.destination = currentCenter - moveArea / 2 + Point.random() * moveArea;
+}
+
+
+
+for(var i = 0;i < numBalls;i++){
+    balls.push(new Ball(50));
+}
+
+
+function onMouseDown(event){
+    currentCenter = event.point;
+    for(var i = 0;i < numBalls;i++){
+        balls[i].destination = event.point - moveArea / 2 + Point.random() * moveArea;
+    }
+}
+
+function onFrame(event){
+    for(var i = 0;i < numBalls;i++){
+        balls[i].vector = balls[i].destination - balls[i].path.position;
+
+        balls[i].path.position += balls[i].vector / 30;
+
+        if(balls[i].vector.length < 5){
+            balls[i].destination = currentCenter - moveArea / 2 + Point.random() * moveArea;
+        }
+
+    }
+}
+</script>
+<canvas id="myCanvas" resize></canvas>
