@@ -129,7 +129,7 @@ export const tick = (list, cellSize, context, options) => () => {
   const {ease, minDistSquare, sepNormMag} = options;
   while (cell != null) {
     let [rAve, gAve, bAve, rVelAve, gVelAve, bVelAve, rSep, gSep, bSep]
-      = new Array(9).fill(0);
+      = [0, 0, 0, 0, 0, 0, 0, 0, 0];
     let neighborPointer = cell.neighborPointerList.first;
     while (neighborPointer != null) {
       const neighbor = neighborPointer.neighbor;
