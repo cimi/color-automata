@@ -1,6 +1,7 @@
 // through this file we can override the default cra configuration
 // see: https://github.com/timarney/react-app-rewired
 const path = require('path')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = function override(config, env) {
   // see: https://github.com/ballercat/wasm-loader/issues/3 for more details
@@ -18,5 +19,12 @@ module.exports = function override(config, env) {
     include: path.resolve(__dirname, "src"),
     use: [{loader: require.resolve('wasm-loader'), options: {}}]
   });
+
+  const copyWebpackPlugin = new CopyWebpackPlugin([{
+    from: 'src/wasm/*.wasm',
+    to: 'wasm/[name].wasm'
+  }]);
+  config.plugins.push(copyWebpackPlugin);
+
   return config;
 }
