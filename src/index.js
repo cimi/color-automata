@@ -2,26 +2,31 @@ import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import {createCells, restart, tick} from './color-automata';
 
-import Counter from './wasm/counter';
+import Tapestry from './wasm/tapestry.js';
 
-const WebAssembly = window.WebAssembly;
 
 // ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();
 
 const wasmHelloWorld = () => {
-  console.dir(Counter);
-  const memory = new WebAssembly.Memory({initial: 256});
-  const counter = new Counter({
-    env: {
-      memoryBase: 0,
-      tableBase: 0,
-      memory,
-      table: new WebAssembly.Table({initial: 0, element: 'anyfunc'})
+  const tapestry = Tapestry({wasmBinaryFile: 'wasm/tapestry.wasm'});
+  console.dir(tapestry)
+  // the module loading is async!
+  // tapestry.asm._init(40, 40);
+  // tapestry.onRuntimeInitialized = () => {
+  //   console.dir(tapestry.asm);
+  //   console.log(tapestry.asm._init);
+  // }
+  tapestry.then(() => {
+    const allocAddr = tapestry.asm._init(40, 40);
+    for (let i = 0; i < 160; i++) {
+      console.log(tapestry.HEAP8[allocAddr + i]);
     }
   });
-  console.log("count function result is : " + counter.exports._count());
-  console.log(memory.buffer);
+  // setTimeout(() => {
+  //   console.dir(tapestry.asm);
+  //   console.log(tapestry.asm._init);
+  // }, 100);
 }
 
 window.onload = wasmHelloWorld;
