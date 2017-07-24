@@ -8,7 +8,8 @@
   },
   "devDependencies": {
     "gh-pages": "^1.0.0",
-    "react-scripts": "1.0.7"
+    "react-app-rewired": "^1.0.11",
+    "react-scripts": "1.0.10"
   },
   "homepage": "http://cimi.io/",
   "scripts": {
