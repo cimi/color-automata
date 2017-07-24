@@ -1,13 +1,30 @@
-// import React from 'react';
-// import ReactDOM from 'react-dom';
-// import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import {createCells, restart, tick} from './color-automata';
 
+import Counter from './wasm/counter';
+
+const WebAssembly = window.WebAssembly;
+
 // ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();
 
+const wasmHelloWorld = () => {
+  console.dir(Counter);
+  const memory = new WebAssembly.Memory({initial: 256});
+  const counter = new Counter({
+    env: {
+      memoryBase: 0,
+      tableBase: 0,
+      memory,
+      table: new WebAssembly.Table({initial: 0, element: 'anyfunc'})
+    }
+  });
+  console.log("count function result is : " + counter.exports._count());
+  console.log(memory.buffer);
+}
+
+window.onload = wasmHelloWorld;
 
 window.addEventListener("load", canvasApp, false);
 
