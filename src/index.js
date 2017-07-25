@@ -4,7 +4,7 @@ import {createCells, restart, tick} from './color-automata';
 
 import TapestryModule from './wasm/tapestry.js';
 
-import MandelbrotModule from './wasm/mandelbrot.js'
+// import MandelbrotModule from './wasm/mandelbrot.js'
 
 
 // ReactDOM.render(<App />, document.getElementById('root'));
@@ -24,21 +24,21 @@ const wasmHelloWorld = () => {
           canvas.height = height;
       }
       console.log(width, height);
-      console.time('mandelbrot');
+      console.time('initialization');
       const tapestry = new Tapestry.Tapestry(width, height);
-      console.timeEnd('mandelbrot');
+      console.timeEnd('initialization');
 
       function drawTile() {
         console.time('compute tile');
         const tile = tapestry.nextTile();
         console.timeEnd('compute tile');
         if (tile) {
-          console.time('import image data');
+          // console.time('import image data');
           const imageData = new ImageData(new Uint8ClampedArray(tile.data), tile.width, tile.height);
-          console.timeEnd('import image data');
-          console.time('put image data');
+          // console.timeEnd('import image data');
+          // console.time('put image data');
           context.putImageData(imageData, tile.x, tile.y);
-          console.timeEnd('put image data');
+          // console.timeEnd('put image data');
           window.requestAnimationFrame(drawTile);
         }
       }

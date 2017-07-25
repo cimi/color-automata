@@ -3,23 +3,10 @@
 #include <ctime>
 #include <emscripten/bind.h>
 
-// CSV to RGB conversion from http://stackoverflow.com/questions/3018313/
 typedef struct {
-  double r; // a fraction between 0 and 1
-  double g; // a fraction between 0 and 1
-  double b; // a fraction between 0 and 1
-} rgb;
-
-typedef struct {
-  double h; // angle in degrees
-  double s; // a fraction between 0 and 1
-  double v; // a fraction between 0 and 1
-} hsv;
-
-typedef struct {
-  unsigned char r;
-  unsigned char g;
-  unsigned char b;
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
 } pixel;
 
 const int TILE_SIZE = 1024;
@@ -38,9 +25,57 @@ private:
   // green, blue, alpha
   uint8_t buffer[TILE_SIZE * TILE_SIZE * 4];
 
+  pixel *colorPrimary = nullptr;
+  pixel *colorBuffer = nullptr;
+  pixel *velocityPrimary = nullptr;
+  pixel *velocityBuffer = nullptr;
+
+  pixel *initBufferToRandomColors() {
+    pixel *output = (pixel *)malloc(this->width * this->height);
+    for (int y = 0; y < this->height; y++) {
+      for (int x = 0; x < this->width; x++) {
+        int addr = y * this->width + x;
+        output[addr].r = std::rand() % 255 + 1;
+        output[addr].g = std::rand() % 255 + 1;
+        output[addr].b = std::rand() % 255 + 1;
+      }
+    }
+    return output;
+  }
+
+  pixel *copyBufferValues(pixel *input) {
+    pixel *output = (pixel *)malloc(this->width * this->height);
+    for (int y = 0; y < this->height; y++) {
+      for (int x = 0; x < this->width; x++) {
+        size_t addr = y * this->width + x;
+        output[addr].r = input[addr].r;
+        output[addr].g = input[addr].g;
+        output[addr].b = input[addr].b;
+      }
+    }
+    return output;
+  }
+
+  pixel *initBufferToZero() {
+    pixel *output = (pixel *)malloc(this->width * this->height);
+    for (int y = 0; y < this->height; y++) {
+      for (int x = 0; x < this->width; x++) {
+        int addr = y * this->width + x;
+        output[addr].r = 0;
+        output[addr].g = 0;
+        output[addr].b = 0;
+      }
+    }
+    return output;
+  }
+
 public:
-  Tapestry(int width, int height)
-    : width(width), height(height) {}
+  Tapestry(int width, int height) : width(width), height(height) {
+    // seed the random number generator as it drives initial state
+    std::srand(std::time(0));
+    this->colorPrimary = this->initBufferToRandomColors();
+    // this->colorBuffer = this->copyBufferValues(this->colorPrimary);
+  }
 
   emscripten::val nextTile() {
     if (this->currentTileY * TILE_SIZE > this->height) {
@@ -48,18 +83,18 @@ public:
     }
 
     // Generate a TILE_SIZE x TILE_SIZE array of pixels
-    for (int y = this->currentTileY * TILE_SIZE;
-         y < (this->currentTileY + 1) * TILE_SIZE; y++) {
-      for (int x = this->currentTileX * TILE_SIZE;
-           x < (this->currentTileX + 1) * TILE_SIZE; x++) {
-        // draw the pixel
-        size_t bufferOffset =
-            ((x - this->currentTileX * TILE_SIZE) +
-             (y - this->currentTileY * TILE_SIZE) * TILE_SIZE) *
-            4;
-        this->buffer[bufferOffset + 0] = std::rand() % 255 + 1;
-        this->buffer[bufferOffset + 1] = std::rand() % 255 + 1;
-        this->buffer[bufferOffset + 2] = std::rand() % 255 + 1;
+    int startx = this->currentTileX * TILE_SIZE;
+    int endx = (this->currentTileX + 1) * TILE_SIZE;
+    int starty = this->currentTileY * TILE_SIZE;
+    int endy = (this->currentTileY + 1) * TILE_SIZE;
+    for (int y = starty; y < endy; y++) {
+      for (int x = startx; x < endx; x++) {
+        // copy the color values from color primary into the buffer that gets returned to JS
+        size_t bufferOffset = ((x - startx) + (y - starty) * TILE_SIZE) * 4;
+        size_t addr = ((x - startx) + (y - starty) * TILE_SIZE);
+        this->buffer[bufferOffset + 0] = this->colorPrimary[addr].r;
+        this->buffer[bufferOffset + 1] = this->colorPrimary[addr].g;
+        this->buffer[bufferOffset + 2] = this->colorPrimary[addr].b;
         this->buffer[bufferOffset + 3] = 255;
       }
     }
