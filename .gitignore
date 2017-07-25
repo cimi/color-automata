@@ -9,6 +9,9 @@
 # production
 /build
 
+src/wasm/*.js
+src/wasm/*.wasm
+
 # misc
 .DS_Store
 .env.local
