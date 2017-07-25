@@ -2,31 +2,36 @@ import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import {createCells, restart, tick} from './color-automata';
 
-import Tapestry from './wasm/tapestry.js';
+import Tapestry from './wasm/tapestry2.js';
 
 
 // ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();
 
 const wasmHelloWorld = () => {
-  const tapestry = Tapestry({wasmBinaryFile: 'wasm/tapestry.wasm'});
-  console.dir(tapestry)
-  // the module loading is async!
-  // tapestry.asm._init(40, 40);
-  // tapestry.onRuntimeInitialized = () => {
-  //   console.dir(tapestry.asm);
-  //   console.log(tapestry.asm._init);
-  // }
-  tapestry.then(() => {
-    const allocAddr = tapestry.asm._init(40, 40);
-    for (let i = 0; i < 160; i++) {
-      console.log(tapestry.HEAP8[allocAddr + i]);
-    }
+  Tapestry({wasmBinaryFile: 'wasm/tapestry2.wasm'}).then(tapestry => {
+    tapestry.addOnPostRun(() => {
+      const canvas = document.getElementById('displayCanvas');
+
+      // Canvas resizing from http://stackoverflow.com/a/43364730/2142626
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+      }
+      console.log(width, height);
+      console.time('mandelbrot');
+      const mandelbrot = tapestry.mandelbrot(width, height, 1, -0.5, 0);
+      console.timeEnd('mandelbrot');
+
+      console.time('canvas put image data');
+      const imageData = new ImageData(new Uint8ClampedArray(mandelbrot), width, height);
+      // const context = canvas.getContext('2d');
+      // context.putImageData(imageData, 0, 0);
+      console.timeEnd('canvas put image data');
+    }, err => { throw err; });
   });
-  // setTimeout(() => {
-  //   console.dir(tapestry.asm);
-  //   console.log(tapestry.asm._init);
-  // }, 100);
 }
 
 window.onload = wasmHelloWorld;
