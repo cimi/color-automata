@@ -4,20 +4,25 @@ import {createCells, restart, tick} from './color-automata';
 
 import TapestryModule from './wasm/tapestry.js';
 
-// import MandelbrotModule from './wasm/mandelbrot.js'
-
-
-// ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();
+const debug = false;
+if (!debug) {
+  console.time = () => {};
+  console.timeEnd = () => {};
+}
 
 const wasmRenderTapestry = () => {
+  const scalingFactorX = Math.max(3, Math.floor(window.innerWidth / 1024));
+  const scalingFactorY = Math.max(3, Math.floor(window.innerHeight / 1024));
+  console.log('scaling factors:', scalingFactorX, scalingFactorY);
   TapestryModule({wasmBinaryFile: 'wasm/tapestry.wasm'}).then(Tapestry => {
     Tapestry.addOnPostRun(() => {
-      const canvas = document.getElementById('displayCanvas');
+      const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
 
-      const width = window.innerWidth / 2;
-      const height = window.innerHeight / 2;
+      const width = window.innerWidth / scalingFactorX;
+      const height = window.innerHeight / scalingFactorY;
+      console.log('sending', width, height);
       if (canvas.width !== width || canvas.height !== height) {
           canvas.width = width;
           canvas.height = height;
@@ -25,6 +30,12 @@ const wasmRenderTapestry = () => {
       console.time('initialization');
       const tapestry = new Tapestry.Tapestry(width, height);
       console.timeEnd('initialization');
+
+      const displayCanvas = document.getElementById('displayCanvas');
+      displayCanvas.width = window.innerWidth;
+      displayCanvas.height = window.innerHeight;
+      const displayContext = displayCanvas.getContext('2d');
+      displayContext.scale(scalingFactorX, scalingFactorY);
 
       setInterval(() => {
         console.time('wasm extract image');
@@ -36,10 +47,13 @@ const wasmRenderTapestry = () => {
         context.putImageData(imageData, 0, 0);
         console.timeEnd('canvas put image data');
 
+        console.time('canvas scale other image');
+        displayContext.drawImage(canvas, 0, 0);
+        console.timeEnd('canvas scale other image');
+
         console.time('wasm compute image');
         tapestry.tick();
         console.timeEnd('wasm compute image');
-
       }, 1000 / 30);
     });
   });
@@ -55,8 +69,8 @@ function canvasApp() {
   const displayWidth = displayCanvas.width;
   const displayHeight = displayCanvas.height;
 
-  const gridWidth = 512;
-  const gridHeight = 128;
+  const gridWidth = 426;
+  const gridHeight = 225;
 
   const cellSize = {
     width: displayWidth / gridWidth,
