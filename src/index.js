@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import {createCells, restart, tick} from './color-automata';
@@ -12,9 +13,10 @@ if (!debug) {
 }
 
 const wasmRenderTapestry = () => {
-  const scalingFactorX = Math.max(3, Math.floor(window.innerWidth / 1024));
-  const scalingFactorY = Math.max(3, Math.floor(window.innerHeight / 1024));
-  console.log('scaling factors:', scalingFactorX, scalingFactorY);
+  const scalingFactorX = Math.max(5, Math.floor(window.innerWidth / 1024));
+  const scalingFactorY = Math.max(5, Math.floor(window.innerHeight / 1024));
+  console.log('Running the WASM implementation!');
+  console.log('Window size: ', window.innerWidth, window.innerHeight);
   TapestryModule({wasmBinaryFile: 'wasm/tapestry.wasm'}).then(Tapestry => {
     Tapestry.addOnPostRun(() => {
       const canvas = document.createElement('canvas');
@@ -22,7 +24,7 @@ const wasmRenderTapestry = () => {
 
       const width = window.innerWidth / scalingFactorX;
       const height = window.innerHeight / scalingFactorY;
-      console.log('sending', width, height);
+      console.log('Grid size: ', width, height);
       if (canvas.width !== width || canvas.height !== height) {
           canvas.width = width;
           canvas.height = height;
@@ -59,9 +61,7 @@ const wasmRenderTapestry = () => {
   });
 }
 
-window.onload = wasmRenderTapestry;
-
-function canvasApp() {
+const jsRenderTapestry = () => {
   const displayCanvas = document.getElementById("displayCanvas");
   const context = displayCanvas.getContext("2d");
   context.canvas.width  = window.innerWidth;
@@ -69,8 +69,11 @@ function canvasApp() {
   const displayWidth = displayCanvas.width;
   const displayHeight = displayCanvas.height;
 
-  const gridWidth = 426;
-  const gridHeight = 225;
+  const gridWidth = 512;
+  const gridHeight = 288;
+  console.log('Running the pure JS implementation!');
+  console.log('Window size: ', window.innerWidth, window.innerHeight);
+  console.log('Grid size: ', gridWidth, gridHeight);
 
   const cellSize = {
     width: displayWidth / gridWidth,
@@ -91,4 +94,12 @@ function canvasApp() {
 
   // we aim for 30 fps
   window.setInterval(tick(list, cellSize, context, options), 1000/30);
+}
+
+const url = new URL(window.location);
+console.log(url);
+if (url.searchParams.get('pureJS')) {
+  window.onload = jsRenderTapestry;
+} else {
+  window.onload = wasmRenderTapestry;
 }
