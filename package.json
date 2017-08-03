@@ -1,5 +1,5 @@
 {
-  "name": "automata",
+  "name": "color-automata",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -13,7 +13,7 @@
     "react-scripts": "1.0.10",
     "wasm-loader": "^1.0.0"
   },
-  "homepage": "http://cimi.io/",
+  "homepage": "https://cimi.github.io/color-automata",
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
