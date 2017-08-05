@@ -3,7 +3,7 @@ import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import {createCells, restart, tick} from './color-automata';
 
-import TapestryModule from './wasm/tapestry.js';
+import WasmLoader from './wasm/tapestry.js';
 
 registerServiceWorker();
 const debug = false;
@@ -17,8 +17,8 @@ const wasmRenderTapestry = () => {
   const scalingFactorY = Math.max(5, Math.floor(window.innerHeight / 1024));
   console.log('Running the WASM implementation!');
   console.log('Window size: ', window.innerWidth, window.innerHeight);
-  TapestryModule({wasmBinaryFile: 'wasm/tapestry.wasm'}).then(Tapestry => {
-    Tapestry.addOnPostRun(() => {
+  WasmLoader({wasmBinaryFile: 'wasm/tapestry.wasm'}).then(TapestryModule => {
+    TapestryModule.addOnPostRun(() => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
 
@@ -30,7 +30,7 @@ const wasmRenderTapestry = () => {
           canvas.height = height;
       }
       console.time('initialization');
-      const tapestry = new Tapestry.Tapestry(width, height);
+      const tapestry = new TapestryModule.Tapestry(width, height);
       console.timeEnd('initialization');
 
       const displayCanvas = document.getElementById('displayCanvas');
