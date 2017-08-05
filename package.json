@@ -10,8 +10,7 @@
     "copy-webpack-plugin": "^4.0.1",
     "gh-pages": "^1.0.0",
     "react-app-rewired": "^1.0.11",
-    "react-scripts": "1.0.10",
-    "wasm-loader": "^1.0.0"
+    "react-scripts": "1.0.10"
   },
   "homepage": "https://cimi.github.io/color-automata",
   "scripts": {
