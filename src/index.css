@@ -13,3 +13,40 @@ a {font-family: sans-serif; color:#d15423; text-decoration:none;}
 #displayCanvas {z-index:0;}
 div {}
 #container {width:100%; height:100%; margin:auto;}
+
+#configuration-form div {
+  clear: both;
+}
+#configuration-form span {
+  display: inline-block;
+  line-height: 2.5em;
+  width: 40%;
+  text-align: left;
+}
+#configuration-form input[type=number] {
+  width: 25%;
+  float: right;
+  margin-right: 5px;
+}
+
+#configuration-form .implementation label {
+  float: right;
+  width: 25%;
+}
+
+#configuration-form .show-fps label {
+  float: right;
+  width: 50%;
+}
+
+#configuration-form .show-fps label input {
+  padding-right: 5px;
+}
+
+#configuration-form .credits {
+  clear: both;
+  text-align: center;
+}
+ /*    input[type=number] {
+  width: 100px;
+}*/

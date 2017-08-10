@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */
+import vex from './vex';
+
 import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import {createCells, restart, tick} from './color-automata';
@@ -6,15 +8,16 @@ import {createCells, restart, tick} from './color-automata';
 import WasmLoader from './wasm/tapestry.js';
 
 registerServiceWorker();
+
 const debug = false;
 if (!debug) {
   console.time = () => {};
   console.timeEnd = () => {};
 }
 
-const wasmRenderTapestry = () => {
-  const scalingFactorX = Math.max(5, Math.floor(window.innerWidth / 1024));
-  const scalingFactorY = Math.max(5, Math.floor(window.innerHeight / 1024));
+// start(configuration), stop()
+
+const wasmRenderTapestry = (configuration) => {
   console.log('Running the WASM implementation!');
   console.log('Window size: ', window.innerWidth, window.innerHeight);
   WasmLoader({wasmBinaryFile: 'wasm/tapestry.wasm'}).then(TapestryModule => {
@@ -22,8 +25,7 @@ const wasmRenderTapestry = () => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
 
-      const width = window.innerWidth / scalingFactorX;
-      const height = window.innerHeight / scalingFactorY;
+      const {width, height} = configuration;
       console.log('Grid size: ', width, height);
       if (canvas.width !== width || canvas.height !== height) {
           canvas.width = width;
@@ -61,7 +63,8 @@ const wasmRenderTapestry = () => {
   });
 }
 
-const jsRenderTapestry = () => {
+const jsRenderTapestry = (configuration) => {
+  // extend canvas to full screen
   const displayCanvas = document.getElementById("displayCanvas");
   const context = displayCanvas.getContext("2d");
   context.canvas.width  = window.innerWidth;
@@ -69,10 +72,9 @@ const jsRenderTapestry = () => {
   const displayWidth = displayCanvas.width;
   const displayHeight = displayCanvas.height;
 
-  const gridWidth = 512;
-  const gridHeight = 288;
+  const {width: gridWidth, height: gridHeight} = configuration;
   console.log('Running the pure JS implementation!');
-  console.log('Window size: ', window.innerWidth, window.innerHeight);
+  console.log('Window size: ', displayWidth, displayHeight);
   console.log('Grid size: ', gridWidth, gridHeight);
 
   const cellSize = {
@@ -97,9 +99,65 @@ const jsRenderTapestry = () => {
 }
 
 const url = new URL(window.location);
-console.log(url);
-if (url.searchParams.get('pureJS')) {
-  window.onload = jsRenderTapestry;
-} else {
-  window.onload = wasmRenderTapestry;
+
+const scalingFactorX = Math.max(5, Math.floor(window.innerWidth / 1024));
+const scalingFactorY = Math.max(5, Math.floor(window.innerHeight / 1024));
+
+const tapestryConfiguration = {
+  width: Math.floor(window.innerWidth / scalingFactorX),
+  height: Math.floor(window.innerHeight / scalingFactorY),
+  implementation: url.searchParams.get('pureJS') ? 'js' : 'wasm'
 }
+
+const openConfigurationModal = () => {
+  vex.dialog.buttons.YES.text = 'Reset';
+  vex.dialog.open({
+    message: `You are looking at a combination between a cellular automaton and a flocking algorithm that yields a color tapestry.
+      Use the controls below to reset the tapestry to a different configuration.`,
+    input: `<div id="configuration-form">
+        <div class="grid-size">
+          <span>Grid size</span>
+          <input name="width" type="number" value="${tapestryConfiguration.width}"></input>
+          <input name="height" type="number" value="${tapestryConfiguration.height}"></input>
+        </div>
+        <div class="implementation">
+          <span>Implementation</span>
+          <label><input type="radio" name="implementation" value="pureJS" ${tapestryConfiguration.implementation === 'pureJS' ? 'checked' : ''} />JS</label>
+          <label><input type="radio" name="implementation" value="wasm" ${tapestryConfiguration.implementation === 'wasm' ? 'checked' : ''} />WASM</label>
+        </div>
+        <div class="show-fps">
+          <span></span>
+          <label for="showFPS"><input type="checkbox" name="showFPS" id="showFPS" ${tapestryConfiguration.showFps ? 'checked' : ''} />Show FPS counter</label>
+        </div>
+      <p class="credits"> Inspired by <a href="http://rectangleworld.com/blog/archives/587">Rectangleworld</a>.
+      More details on <a href="https://github.com/cimi/color-automata">on GitHub</a>!</p>
+      </div>
+    `,
+    callback: (data) => {
+      startTapestry(extractConfiguration(data));
+    }
+  });
+}
+
+const extractConfiguration = (data) => {
+  console.log(data);
+  return tapestryConfiguration;
+}
+
+const startTapestry = (configuration) => {
+  if (configuration.implementation === 'js') {
+    jsRenderTapestry(configuration);
+  } else {
+    wasmRenderTapestry(configuration);
+  }
+}
+
+window.onload = () => {
+  const octocat = document.getElementsByClassName('github-corner')[0];
+  octocat.addEventListener('click', (e) => {
+    e.preventDefault();
+    openConfigurationModal();
+  })
+}
+
+
