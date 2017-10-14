@@ -17,6 +17,8 @@ if (!debug) {
 
 // start(configuration), stop()
 
+let currentIntervalId;
+
 const wasmRenderTapestry = (configuration) => {
   console.log('Running the WASM implementation!');
   console.log('Window size: ', window.innerWidth, window.innerHeight);
@@ -41,7 +43,7 @@ const wasmRenderTapestry = (configuration) => {
       const displayContext = displayCanvas.getContext('2d');
       displayContext.scale(scalingFactorX, scalingFactorY);
 
-      setInterval(() => {
+      currentIntervalId = setInterval(() => {
         console.time('wasm extract image');
         const tile = tapestry.fullImage();
         console.timeEnd('wasm extract image');
@@ -95,7 +97,7 @@ const jsRenderTapestry = (configuration) => {
   displayCanvas.addEventListener("click", restart(list), false);
 
   // we aim for 30 fps
-  window.setInterval(tick(list, cellSize, context, options), 1000/30);
+  currentIntervalId = window.setInterval(tick(list, cellSize, context, options), 1000/30);
 }
 
 const url = new URL(window.location);
@@ -145,6 +147,7 @@ const extractConfiguration = (data) => {
 }
 
 const startTapestry = (configuration) => {
+  clearInterval(currentIntervalId);
   if (configuration.implementation === 'js') {
     jsRenderTapestry(configuration);
   } else {
