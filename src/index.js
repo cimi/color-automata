@@ -20,7 +20,7 @@ if (!debug) {
 const wasmRenderTapestry = (configuration) => {
   console.log('Running the WASM implementation!');
   console.log('Window size: ', window.innerWidth, window.innerHeight);
-  WasmLoader({wasmBinaryFile: 'wasm/tapestry.wasm'}).then(TapestryModule => {
+  WasmLoader({wasmBinaryFile: 'tapestry.wasm'}).then(TapestryModule => {
     TapestryModule.addOnPostRun(() => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
