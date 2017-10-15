@@ -173,8 +173,7 @@ window.onload = () => {
         e.preventDefault();
         openConfigurationModal();
       });
+      startTapestry(tapestryConfiguration);
     });
   });
 }
-
-
