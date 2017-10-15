@@ -9,21 +9,18 @@ import WasmLoader from './wasm/wasm-loader';
 
 registerServiceWorker();
 
-const debug = false;
-if (!debug) {
-  console.time = () => {};
-  console.timeEnd = () => {};
-}
-
-// start(configuration), stop()
+// console and debug settings
+const noop = () => {};
+const originalConsole = {log: console.log, time: console.time, timeEnd: console.timEnd};
+const dummyConsole = {log: noop, time: noop, timeEnd: noop};
 
 let currentIntervalId;
 
 const wasmRenderTapestry = (configuration) => {
   console.log('Running the WASM implementation!');
   console.log('Window size: ', window.innerWidth, window.innerHeight);
-  WasmLoader({wasmBinaryFile: 'tapestry.wasm'}).then(TapestryModule => {
-    TapestryModule.addOnPostRun(() => {
+  WasmLoader({wasmBinaryFile: 'tapestry.wasm'}).then(WasmModule => {
+    WasmModule.addOnPostRun(() => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
 
@@ -34,7 +31,7 @@ const wasmRenderTapestry = (configuration) => {
           canvas.height = height;
       }
       console.time('initialization');
-      const tapestry = new TapestryModule.Tapestry(width, height);
+      const tapestry = new WasmModule.Tapestry(width, height);
       console.timeEnd('initialization');
 
       const displayCanvas = document.getElementById('displayCanvas');
@@ -108,8 +105,13 @@ const scalingFactorY = Math.max(5, Math.floor(window.innerHeight / 1024));
 const tapestryConfiguration = {
   width: Math.floor(window.innerWidth / scalingFactorX),
   height: Math.floor(window.innerHeight / scalingFactorY),
-  implementation: url.searchParams.get('pureJS') ? 'js' : 'wasm'
+  implementation: url.searchParams.get('pureJS') ? 'js' : 'wasm',
+  debug: false
 }
+
+
+// TODO: configure cell size instead of choosing width and height
+// that way there's no distortion and you can play better with granularity
 
 const openConfigurationModal = () => {
   vex.dialog.buttons.YES.text = 'Reset';
@@ -119,17 +121,17 @@ const openConfigurationModal = () => {
     input: `<div id="configuration-form">
         <div class="grid-size">
           <span>Grid size</span>
-          <input name="width" type="number" value="${tapestryConfiguration.width}"></input>
           <input name="height" type="number" value="${tapestryConfiguration.height}"></input>
+          <input name="width" type="number" value="${tapestryConfiguration.width}"></input>
         </div>
         <div class="implementation">
           <span>Implementation</span>
-          <label><input type="radio" name="implementation" value="pureJS" ${tapestryConfiguration.implementation === 'pureJS' ? 'checked' : ''} />JS</label>
+          <label><input type="radio" name="implementation" value="js" ${tapestryConfiguration.implementation === 'js' ? 'checked' : ''} />JS</label>
           <label><input type="radio" name="implementation" value="wasm" ${tapestryConfiguration.implementation === 'wasm' ? 'checked' : ''} />WASM</label>
         </div>
         <div class="show-fps">
           <span></span>
-          <label for="showFPS"><input type="checkbox" name="showFPS" id="showFPS" ${tapestryConfiguration.showFps ? 'checked' : ''} />Show FPS counter</label>
+          <label for="debug"><input type="checkbox" name="debug" ${tapestryConfiguration.debug ? 'checked' : ''} />Console debugging</label>
         </div>
       <p class="credits"> Inspired by <a href="http://rectangleworld.com/blog/archives/587">Rectangleworld</a>.
       More details on <a href="https://github.com/cimi/color-automata">on GitHub</a>!</p>
@@ -142,12 +144,17 @@ const openConfigurationModal = () => {
 }
 
 const extractConfiguration = (data) => {
-  console.log(data);
+  data.width = Number(data.width);
+  data.height = Number(data.height);
+  console.log(Object.assign(tapestryConfiguration, data));
   return tapestryConfiguration;
 }
 
 const startTapestry = (configuration) => {
   clearInterval(currentIntervalId);
+  // if debugging is enabled, use the console otherwise don't
+  Object.assign(console, configuration.debug ? originalConsole : dummyConsole);
+
   if (configuration.implementation === 'js') {
     jsRenderTapestry(configuration);
   } else {

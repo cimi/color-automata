@@ -34,6 +34,10 @@ div {}
   width: 25%;
 }
 
+#configuration-form .implementation label input {
+  margin-right: 5px;
+}
+
 #configuration-form .show-fps label {
   float: right;
   width: 50%;
