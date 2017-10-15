@@ -5,7 +5,7 @@ import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import {createCells, restart, tick} from './color-automata';
 
-import WasmLoader from './wasm/tapestry.js';
+import WasmLoader from './wasm/wasm-loader';
 
 registerServiceWorker();
 
