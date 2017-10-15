@@ -15,51 +15,53 @@ const originalConsole = {log: console.log, time: console.time, timeEnd: console.
 const dummyConsole = {log: noop, time: noop, timeEnd: noop};
 
 let currentIntervalId;
+let wasm;
+
+const resetCanvas = (canvas, configuration) => {
+  const {width, height} = configuration;
+  console.log('Resetting canvas to match grid configuration: ', width, height);
+  if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+  }
+}
 
 const wasmRenderTapestry = (configuration) => {
   console.log('Running the WASM implementation!');
   console.log('Window size: ', window.innerWidth, window.innerHeight);
-  WasmLoader({wasmBinaryFile: 'tapestry.wasm'}).then(WasmModule => {
-    WasmModule.addOnPostRun(() => {
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
+  const canvas = document.createElement('canvas');
 
-      const {width, height} = configuration;
-      console.log('Grid size: ', width, height);
-      if (canvas.width !== width || canvas.height !== height) {
-          canvas.width = width;
-          canvas.height = height;
-      }
-      console.time('initialization');
-      const tapestry = new WasmModule.Tapestry(width, height);
-      console.timeEnd('initialization');
+  resetCanvas(canvas, configuration);
+  const {width, height} = configuration;
+  console.time('initialization');
+  const tapestry = new wasm.Tapestry(width, height);
+  console.timeEnd('initialization');
 
-      const displayCanvas = document.getElementById('displayCanvas');
-      displayCanvas.width = window.innerWidth;
-      displayCanvas.height = window.innerHeight;
-      const displayContext = displayCanvas.getContext('2d');
-      displayContext.scale(scalingFactorX, scalingFactorY);
+  const displayCanvas = document.getElementById('displayCanvas');
+  resetCanvas(displayCanvas, {width: window.innerWidth, height: window.innerHeight})
 
-      currentIntervalId = setInterval(() => {
-        console.time('wasm extract image');
-        const tile = tapestry.fullImage();
-        console.timeEnd('wasm extract image');
+  const context = canvas.getContext('2d');
+  const displayContext = displayCanvas.getContext('2d');
+  displayContext.scale(scalingFactorX, scalingFactorY);
 
-        console.time('canvas put image data');
-        const imageData = new ImageData(new Uint8ClampedArray(tile), width, height);
-        context.putImageData(imageData, 0, 0);
-        console.timeEnd('canvas put image data');
+  currentIntervalId = setInterval(() => {
+    console.time('wasm extract image');
+    const tile = tapestry.fullImage();
+    console.timeEnd('wasm extract image');
 
-        console.time('canvas scale other image');
-        displayContext.drawImage(canvas, 0, 0);
-        console.timeEnd('canvas scale other image');
+    console.time('canvas put image data');
+    const imageData = new ImageData(new Uint8ClampedArray(tile), width, height);
+    context.putImageData(imageData, 0, 0);
+    console.timeEnd('canvas put image data');
 
-        console.time('wasm compute image');
-        tapestry.tick();
-        console.timeEnd('wasm compute image');
-      }, 1000 / 30);
-    });
-  });
+    console.time('canvas scale other image');
+    displayContext.drawImage(canvas, 0, 0);
+    console.timeEnd('canvas scale other image');
+
+    console.time('wasm compute image');
+    tapestry.tick();
+    console.timeEnd('wasm compute image');
+  }, 1000 / 30);
 }
 
 const jsRenderTapestry = (configuration) => {
@@ -163,11 +165,16 @@ const startTapestry = (configuration) => {
 }
 
 window.onload = () => {
-  const octocat = document.getElementsByClassName('github-corner')[0];
-  octocat.addEventListener('click', (e) => {
-    e.preventDefault();
-    openConfigurationModal();
-  })
+  WasmLoader({wasmBinaryFile: 'tapestry.wasm'}).then(WasmModule => {
+    WasmModule.addOnPostRun(() => {
+      wasm = WasmModule;
+      const octocat = document.getElementsByClassName('github-corner')[0];
+      octocat.addEventListener('click', (e) => {
+        e.preventDefault();
+        openConfigurationModal();
+      });
+    });
+  });
 }
 
 
