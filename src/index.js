@@ -5,7 +5,7 @@ import registerServiceWorker from './registerServiceWorker';
 import './index.css';
 import {createCells, restart, tick} from './color-automata';
 
-import WasmLoader from './wasm/wasm-loader';
+import WasmLoader from './wasm-loader';
 
 registerServiceWorker();
 

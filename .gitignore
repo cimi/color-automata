@@ -9,8 +9,8 @@
 # production
 /build
 
-src/wasm/*.js
-src/wasm/*.wasm
+wasm/*.js
+wasm/*.wasm
 
 # misc
 .DS_Store
