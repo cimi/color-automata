@@ -11,6 +11,8 @@
 
 wasm/*.js
 wasm/*.wasm
+public/*.wasm
+src/wasm-loader.js
 
 # misc
 .DS_Store
