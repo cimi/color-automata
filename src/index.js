@@ -99,30 +99,30 @@ const jsRenderTapestry = (configuration) => {
   currentIntervalId = window.setInterval(tick(list, cellSize, context, options), 1000/30);
 }
 
-const url = new URL(window.location);
-
 const scalingFactorX = Math.max(5, Math.floor(window.innerWidth / 1024));
 const scalingFactorY = Math.max(5, Math.floor(window.innerHeight / 1024));
+
+const isWebAssemblySupported = () => typeof window.WebAssembly === 'object';
 
 const tapestryConfiguration = {
   width: Math.floor(window.innerWidth / scalingFactorX),
   height: Math.floor(window.innerHeight / scalingFactorY),
-  implementation: url.searchParams.get('pureJS') ? 'js' : 'wasm',
+  implementation: isWebAssemblySupported() ? 'wasm' : 'js',
   debug: false
 }
-
 
 // TODO: configure cell size instead of choosing width and height
 // that way there's no distortion and you can play better with granularity
 
 const openConfigurationModal = () => {
   vex.dialog.buttons.YES.text = 'Reset';
+  // TODO: currently running configuration instead of description
   vex.dialog.open({
     message: `You are looking at a combination between a cellular automaton and a flocking algorithm that yields a color tapestry.
       Use the controls below to reset the tapestry to a different configuration.`,
     input: `<div id="configuration-form">
         <div class="grid-size">
-          <span>Grid size</span>
+          <span>Cell size</span>
           <input name="height" type="number" value="${tapestryConfiguration.height}"></input>
           <input name="width" type="number" value="${tapestryConfiguration.width}"></input>
         </div>
