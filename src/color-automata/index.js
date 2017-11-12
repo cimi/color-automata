@@ -1,4 +1,3 @@
-
 const randomColor = () => ({
   r: Math.random() * 255,
   g: Math.random() * 255,
@@ -6,21 +5,25 @@ const randomColor = () => ({
 });
 
 const setNeighbours = (cell, grid) => {
-  const {i, j} = cell;
+  const { i, j } = cell;
   if (i > 0) {
-    cell.neighbors.push(grid[i-1][j]);
-    grid[i-1][j].neighbors.push(cell);
+    cell.neighbors.push(grid[i - 1][j]);
+    grid[i - 1][j].neighbors.push(cell);
   }
   if (j > 0) {
-    cell.neighbors.push(grid[i][j-1]);
-    grid[i][j-1].neighbors.push(cell);
+    cell.neighbors.push(grid[i][j - 1]);
+    grid[i][j - 1].neighbors.push(cell);
   }
-}
+};
 
-const cellFactory = ({width, height}) => (i, j) => {
-  const {r, g, b} = randomColor();
+const cellFactory = ({ width, height }) => (i, j) => {
+  const { r, g, b } = randomColor();
   return {
-    i, j, r, g, b,
+    i,
+    j,
+    r,
+    g,
+    b,
     x: i * width,
     y: j * height,
     bufferR: r,
@@ -35,26 +38,26 @@ const cellFactory = ({width, height}) => (i, j) => {
     neighbors: [],
     neighborPointerList: {}
   };
-}
+};
 
 const addToList = (cell, list) => {
-  const {i, j} = cell;
-  if ((i === 0) && (j === 0)) {
+  const { i, j } = cell;
+  if (i === 0 && j === 0) {
     list.first = cell;
   } else {
     cell.next = list.first;
     list.first = cell;
   }
-}
+};
 
-const arrangeNeighbors = (list) => {
+const arrangeNeighbors = list => {
   // TODO: this doesn't make much sense
   let cell = list.first;
   while (cell != null) {
     let numNeighbors = 1;
-    cell.neighborPointerList.first = {neighbor: cell.neighbors[0]};
+    cell.neighborPointerList.first = { neighbor: cell.neighbors[0] };
     for (let i = 1; i < cell.neighbors.length; i++) {
-      const newPointer = {next: cell.neighborPointerList.first};
+      const newPointer = { next: cell.neighborPointerList.first };
       cell.neighborPointerList.first = newPointer;
       newPointer.neighbor = cell.neighbors[i];
       ++numNeighbors;
@@ -62,9 +65,7 @@ const arrangeNeighbors = (list) => {
     cell.numNeighbors = numNeighbors;
     cell = cell.next;
   }
-}
-
-
+};
 
 export const createCells = (cellSize, horizontalCells, verticalCells) => {
   const grid = [];
@@ -82,12 +83,12 @@ export const createCells = (cellSize, horizontalCells, verticalCells) => {
   }
   arrangeNeighbors(list);
   return list;
-}
+};
 
 export const restart = list => () => {
   let cell = list.first;
   while (cell) {
-    const {r, g, b} = randomColor();
+    const { r, g, b } = randomColor();
     cell.bufferR = cell.r = r;
     cell.bufferG = cell.g = g;
     cell.bufferB = cell.b = b;
@@ -96,7 +97,7 @@ export const restart = list => () => {
     cell.bufferBVel = cell.bVel = 0;
     cell = cell.next;
   }
-}
+};
 
 const fixBoundaries = cell => {
   //bounce colors off of color cube boundaries
@@ -122,14 +123,23 @@ const fixBoundaries = cell => {
     cell.bufferB = 255;
     cell.bufferBVel *= -1;
   }
-}
+};
 
 export const tick = (list, cellSize, context, options) => () => {
   let cell = list.first;
-  const {ease, minDistSquare, sepNormMag} = options;
+  const { ease, minDistSquare, sepNormMag } = options;
   while (cell != null) {
-    let [rAve, gAve, bAve, rVelAve, gVelAve, bVelAve, rSep, gSep, bSep]
-      = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let [rAve, gAve, bAve, rVelAve, gVelAve, bVelAve, rSep, gSep, bSep] = [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ];
     let neighborPointer = cell.neighborPointerList.first;
     while (neighborPointer != null) {
       const neighbor = neighborPointer.neighbor;
@@ -142,7 +152,7 @@ export const tick = (list, cellSize, context, options) => () => {
       const dr = cell.r - neighbor.r;
       const dg = cell.g - neighbor.g;
       const db = cell.b - neighbor.b;
-      if (dr*dr + dg*dg + db*db < minDistSquare) {
+      if (dr * dr + dg * dg + db * db < minDistSquare) {
         rSep += dr;
         gSep += dg;
         bSep += db;
@@ -150,7 +160,7 @@ export const tick = (list, cellSize, context, options) => () => {
       neighborPointer = neighborPointer.next;
     }
 
-    const f = 1/cell.numNeighbors
+    const f = 1 / cell.numNeighbors;
     rAve *= f;
     gAve *= f;
     bAve *= f;
@@ -159,8 +169,8 @@ export const tick = (list, cellSize, context, options) => () => {
     bVelAve *= f;
 
     //normalize separation vector
-    if ((rSep !== 0) || (gSep !== 0) || (bSep !== 0)) {
-      const length = Math.sqrt(rSep*rSep + gSep*gSep + bSep*bSep);
+    if (rSep !== 0 || gSep !== 0 || bSep !== 0) {
+      const length = Math.sqrt(rSep * rSep + gSep * gSep + bSep * bSep);
       const sepMagRecip = sepNormMag / length;
       rSep *= sepMagRecip;
       gSep *= sepMagRecip;
@@ -168,10 +178,12 @@ export const tick = (list, cellSize, context, options) => () => {
     }
 
     //Update velocity by combining separation, alignment and cohesion effects. Change velocity only by 'ease' ratio.
-    cell.bufferRVel += ease * (rSep + rVelAve + rAve - cell.r - cell.bufferRVel);
-    cell.bufferGVel += ease * (gSep + gVelAve + gAve - cell.g - cell.bufferGVel);
-    cell.bufferBVel += ease * (bSep + bVelAve + bAve - cell.b - cell.bufferBVel);
-
+    cell.bufferRVel +=
+      ease * (rSep + rVelAve + rAve - cell.r - cell.bufferRVel);
+    cell.bufferGVel +=
+      ease * (gSep + gVelAve + gAve - cell.g - cell.bufferGVel);
+    cell.bufferBVel +=
+      ease * (bSep + bVelAve + bAve - cell.b - cell.bufferBVel);
 
     //Code for clamping velocity commented out because in my testing, the velocity never went over the max. (But you may wish to restore this
     //code if you experiment with different parameters.)
@@ -208,4 +220,4 @@ export const tick = (list, cellSize, context, options) => () => {
 
     cell = cell.next;
   }
-}
+};
