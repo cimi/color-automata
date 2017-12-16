@@ -1,7 +1,7 @@
 export EMCC_DEBUG=1
 
 wasm-loader.js: tapestry.cpp
-	em++ --bind --std=c++11 -O3 tapestry.cpp -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -o wasm-loader.js
+	em++ --bind --std=c++11 -O3 tapestry.cpp -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s MODULARIZE=1 -s ASSERTIONS=1 -o wasm-loader.js
 
 ../public/tapestry.wasm: wasm-loader.js
 	mv wasm-loader.wasm ../public/tapestry.wasm
