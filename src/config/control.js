@@ -1,6 +1,6 @@
 import vex from "./vex";
 import { setupLogging } from "./logging";
-import { getConfig, updateConfig } from "./manager";
+import { getConfig, updateConfig } from "./store";
 
 export const startTapestry = () => {
   const config = getConfig();
@@ -40,7 +40,7 @@ export const openConfigurationModal = () => {
     input: `<div id="configuration-form">
         <div class="grid-size">
           <span>Cell size</span>
-          ${input(config, "height")} ${input("width")}
+          ${input(config, "height")} ${input(config, "width")}
         </div>
         <div class="implementation">
           <span>Implementation</span>
