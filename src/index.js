@@ -3,11 +3,11 @@ import vex from "./vex";
 
 import registerServiceWorker from "./registerServiceWorker";
 import "./index.css";
-import { createCells, restart, tick } from "./color-automata";
 
 import WasmLoader from "./wasm-loader";
+import { wasmTapestryFactory, jsTapestry } from "./color-automata";
 
-registerServiceWorker();
+// registerServiceWorker();
 
 // console and debug settings
 const noop = () => {};
@@ -18,106 +18,15 @@ const originalConsole = {
 };
 const dummyConsole = { log: noop, time: noop, timeEnd: noop };
 
-let currentIntervalId;
-let wasm;
-
-const resetCanvas = (canvas, configuration) => {
-  const { width, height } = configuration;
-  console.log("Resetting canvas to match grid configuration: ", width, height);
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-  }
-};
-
-const wasmRenderTapestry = configuration => {
-  console.log("Running the WASM implementation!");
-  console.log("Window size: ", window.innerWidth, window.innerHeight);
-  const canvas = document.createElement("canvas");
-
-  resetCanvas(canvas, configuration);
-  const { width, height } = configuration;
-  console.time("initialization");
-  const tapestry = new wasm.Tapestry(width, height);
-  console.timeEnd("initialization");
-
-  const displayCanvas = document.getElementById("displayCanvas");
-  resetCanvas(displayCanvas, {
-    width: window.innerWidth,
-    height: window.innerHeight
-  });
-
-  const context = canvas.getContext("2d");
-  const displayContext = displayCanvas.getContext("2d");
-  displayContext.scale(scalingFactorX, scalingFactorY);
-
-  currentIntervalId = setInterval(() => {
-    console.time("wasm extract image");
-    const tile = tapestry.fullImage();
-    console.timeEnd("wasm extract image");
-
-    console.time("canvas put image data");
-    const imageData = new ImageData(new Uint8ClampedArray(tile), width, height);
-    context.putImageData(imageData, 0, 0);
-    console.timeEnd("canvas put image data");
-
-    console.time("canvas scale other image");
-    displayContext.drawImage(canvas, 0, 0);
-    console.timeEnd("canvas scale other image");
-
-    console.time("wasm compute image");
-    tapestry.tick();
-    console.timeEnd("wasm compute image");
-  }, 1000 / 30);
-};
-
-const jsRenderTapestry = configuration => {
-  // extend canvas to full screen
-  const displayCanvas = document.getElementById("displayCanvas");
-  const context = displayCanvas.getContext("2d");
-  context.canvas.width = window.innerWidth;
-  context.canvas.height = window.innerHeight;
-  const displayWidth = displayCanvas.width;
-  const displayHeight = displayCanvas.height;
-
-  const { width: gridWidth, height: gridHeight } = configuration;
-  console.log("Running the pure JS implementation!");
-  console.log("Window size: ", displayWidth, displayHeight);
-  console.log("Grid size: ", gridWidth, gridHeight);
-
-  const cellSize = {
-    width: displayWidth / gridWidth,
-    height: displayHeight / gridHeight
-  };
-
-  const options = {
-    ease: 0.67,
-    velMax: 255,
-    minDist: 8,
-    minDistSquare: 64,
-    sepNormMag: 4
-  };
-
-  const list = createCells(cellSize, gridWidth, gridHeight);
-
-  displayCanvas.addEventListener("click", restart(list), false);
-
-  // we aim for 30 fps
-  currentIntervalId = window.setInterval(
-    tick(list, cellSize, context, options),
-    1000 / 30
-  );
-};
+const isWebAssemblySupported = () => typeof window.WebAssembly === "object";
 
 const scalingFactorX = Math.max(5, Math.floor(window.innerWidth / 1024));
 const scalingFactorY = Math.max(5, Math.floor(window.innerHeight / 1024));
-
-const isWebAssemblySupported = () => typeof window.WebAssembly === "object";
-
 const tapestryConfiguration = {
   width: Math.floor(window.innerWidth / scalingFactorX),
   height: Math.floor(window.innerHeight / scalingFactorY),
   implementation: isWebAssemblySupported() ? "wasm" : "js",
+  canvasId: "displayCanvas",
   debug: false
 };
 
@@ -160,40 +69,49 @@ const openConfigurationModal = () => {
       </div>
     `,
     callback: data => {
-      startTapestry(extractConfiguration(data));
+      startTapestry(updateConfig(data), state);
     }
   });
 };
 
-const extractConfiguration = data => {
-  data.width = Number(data.width);
-  data.height = Number(data.height);
-  console.log(Object.assign(tapestryConfiguration, data));
-  return tapestryConfiguration;
-};
+const updateConfig = data =>
+  adjustTypes(Object.assign({}, tapestryConfiguration, data));
 
-const startTapestry = configuration => {
-  clearInterval(currentIntervalId);
+const adjustTypes = config =>
+  Object.assign(config, {
+    width: Number(config.width),
+    height: Number(config.height)
+  });
+
+const setupLogging = configuration =>
   // if debugging is enabled, use the console otherwise don't
   Object.assign(console, configuration.debug ? originalConsole : dummyConsole);
 
+const startTapestry = (configuration, state) => {
+  clearInterval(state.currentIntervalId);
+
+  setupLogging(configuration);
+
   if (configuration.implementation === "js") {
-    jsRenderTapestry(configuration);
+    jsTapestry(configuration, state);
   } else {
-    wasmRenderTapestry(configuration);
+    state.wasmTapestry(configuration, state);
   }
 };
 
+const state = {};
 window.onload = () => {
   WasmLoader({ wasmBinaryFile: "tapestry.wasm" }).then(WasmModule => {
     WasmModule.addOnPostRun(() => {
-      wasm = WasmModule;
+      state.wasmTapestry = wasmTapestryFactory(WasmModule);
+
       const octocat = document.getElementsByClassName("github-corner")[0];
       octocat.addEventListener("click", e => {
         e.preventDefault();
         openConfigurationModal();
       });
-      startTapestry(tapestryConfiguration);
+
+      startTapestry(tapestryConfiguration, state);
     });
   });
 };
