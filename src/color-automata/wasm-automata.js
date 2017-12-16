@@ -31,7 +31,7 @@ export const wasmTapestryFactory = WasmModule => (configuration, state) => {
   const displayContext = displayCanvas.getContext("2d");
   displayContext.scale(scalingFactorX, scalingFactorY);
 
-  state.currentIntervalId = setInterval(() => {
+  return setInterval(() => {
     console.time("wasm extract image");
     const tile = tapestry.fullImage();
     console.timeEnd("wasm extract image");

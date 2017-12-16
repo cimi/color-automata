@@ -222,7 +222,7 @@ const tick = (list, cellSize, context, options) => () => {
   }
 };
 
-export const jsTapestry = (configuration, state) => {
+export const jsTapestry = configuration => {
   // extend canvas to full screen
   const { canvasId } = configuration;
 
@@ -258,8 +258,5 @@ export const jsTapestry = (configuration, state) => {
   displayCanvas.addEventListener("click", restart(list), false);
 
   // we aim for 30 fps
-  state.currentIntervalId = window.setInterval(
-    tick(list, cellSize, context, options),
-    1000 / 30
-  );
+  return setInterval(tick(list, cellSize, context, options), 1000 / 30);
 };
