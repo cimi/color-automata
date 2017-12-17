@@ -3,7 +3,7 @@ const noop = () => {};
 const originalConsole = {
   log: console.log,
   time: console.time,
-  timeEnd: console.timEnd
+  timeEnd: console.timeEnd
 };
 const dummyConsole = { log: noop, time: noop, timeEnd: noop };
 

@@ -13,12 +13,6 @@ let config = {
 
 export const getConfig = () => Object.assign({}, config);
 
-const adjustTypes = config =>
-  Object.assign(config, {
-    width: Number(config.width),
-    height: Number(config.height)
-  });
-
 export const updateConfig = updates => {
-  config = adjustTypes(Object.assign(config, updates));
+  config = Object.assign(config, updates);
 };

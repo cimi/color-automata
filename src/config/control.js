@@ -1,5 +1,6 @@
 import vex from "./vex";
 import { setupLogging } from "./logging";
+import { setupStats } from "./stats";
 import { getConfig, updateConfig } from "./store";
 
 export const startTapestry = () => {
@@ -8,6 +9,8 @@ export const startTapestry = () => {
   clearInterval(config.currentIntervalId);
 
   setupLogging(config);
+  setupStats(config);
+
   let intervalId;
   if (config.implementation === "js") {
     intervalId = config.jsTapestry(config);
@@ -26,7 +29,16 @@ const radio = (config, name, value) =>
   } />`;
 
 const checkbox = (config, name) =>
-  `<input type="checkbox" name="${name}" ${config[name] ? "checked" : ""} />`;
+  `<input type="checkbox" name="${name}" value="on" ${
+    config[name] === true ? "checked" : ""
+  } />`;
+
+const adjustTypes = config =>
+  Object.assign(config, {
+    width: Number(config.width),
+    height: Number(config.height),
+    debug: config.debug === "on"
+  });
 
 // TODO: configure cell size instead of choosing width and height
 // that way there's no distortion and you can play better with granularity
@@ -56,8 +68,11 @@ export const openConfigurationModal = () => {
       </div>
     `,
     callback: data => {
-      updateConfig(data);
-      startTapestry(getConfig());
+      // if cancel is pressed, data is false
+      if (data) {
+        updateConfig(adjustTypes(data));
+        startTapestry(getConfig());
+      }
     }
   });
 };
