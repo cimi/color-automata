@@ -165,6 +165,23 @@ public:
   Tapestry(int width, int height) : width(width), height(height) {
     // seed the random number generator as it drives initial state
     std::srand(std::time(0));
+    this->reset(width, height);
+  }
+
+  void freeBuffers() {
+    free(this->colorPrimary);
+    free(this->colorBuffer);
+    free(this->velocityPrimary);
+    free(this->velocityBuffer);
+  }
+
+  void reset(int width, int height) {
+    if (this->colorPrimary != nullptr) {
+      this->freeBuffers();
+    }
+    this->width = width;
+    this->height = height;
+
     this->colorPrimary = this->initBufferToRandomColors();
     this->colorBuffer = this->initBuffer();
     this->copyBufferValues(this->colorPrimary, this->colorBuffer);
@@ -248,6 +265,7 @@ public:
 EMSCRIPTEN_BINDINGS(hello) {
   emscripten::class_<Tapestry>("Tapestry")
       .constructor<int, int>()
+      .function("reset", &Tapestry::reset)
       .function("fullImage", &Tapestry::fullImage)
       .function("tick", &Tapestry::tick);
 }
