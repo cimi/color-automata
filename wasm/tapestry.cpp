@@ -22,10 +22,6 @@ private:
   int width;
   int height;
 
-  // generate tapestry in tiles
-  int currentTileX = 0;
-  int currentTileY = 0;
-
   // The image buffer handed back to JS for rendering into canvas
   // The image format that imageData expects is four unsigned bytes: red,
   // green, blue, alpha
@@ -228,48 +224,6 @@ public:
     }
     this->copyBufferValues(this->velocityBuffer, this->velocityPrimary);
     this->copyBufferValues(this->colorBuffer, this->colorPrimary);
-
-    this->currentTileY = 0;
-  }
-
-  emscripten::val nextTile() {
-    if (this->currentTileY * TILE_SIZE > this->height) {
-      return emscripten::val::undefined();
-    }
-
-    // Generate a TILE_SIZE x TILE_SIZE array of pixels
-    int startx = this->currentTileX * TILE_SIZE;
-    int endx = (this->currentTileX + 1) * TILE_SIZE;
-    int starty = this->currentTileY * TILE_SIZE;
-    int endy = (this->currentTileY + 1) * TILE_SIZE;
-    for (int y = starty; y < endy; y++) {
-      for (int x = startx; x < endx; x++) {
-        // copy the color values from color primary into the buffer that gets returned to JS
-        int bufferOffset = ((x - startx) + (y - starty) * TILE_SIZE) * 4;
-        int addr = ((x - startx) + (y - starty) * TILE_SIZE);
-        this->buffer[bufferOffset + 0] = this->colorPrimary[addr].r;
-        this->buffer[bufferOffset + 1] = this->colorPrimary[addr].g;
-        this->buffer[bufferOffset + 2] = this->colorPrimary[addr].b;
-        this->buffer[bufferOffset + 3] = 255;
-      }
-    }
-
-    emscripten::val returnVal = emscripten::val::object();
-    returnVal.set("data", emscripten::val(emscripten::typed_memory_view(
-                              TILE_SIZE * TILE_SIZE * 4, this->buffer)));
-    returnVal.set("width", emscripten::val(TILE_SIZE));
-    returnVal.set("height", emscripten::val(TILE_SIZE));
-    returnVal.set("x", emscripten::val(this->currentTileX * TILE_SIZE));
-    returnVal.set("y", emscripten::val(this->currentTileY * TILE_SIZE));
-
-    // Increment to the next tile
-    this->currentTileX++;
-    if (this->currentTileX * TILE_SIZE > this->width) {
-      this->currentTileX = 0;
-      this->currentTileY++;
-    }
-
-    return returnVal;
   }
 
   emscripten::val fullImage() {
@@ -294,7 +248,6 @@ public:
 EMSCRIPTEN_BINDINGS(hello) {
   emscripten::class_<Tapestry>("Tapestry")
       .constructor<int, int>()
-      .function("nextTile", &Tapestry::nextTile)
       .function("fullImage", &Tapestry::fullImage)
       .function("tick", &Tapestry::tick);
 }
