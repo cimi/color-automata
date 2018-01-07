@@ -10,13 +10,13 @@ function makeStats() {
 let reqId;
 export const setupStats = config => {
   const stats = makeStats();
-  if (config.debug) {
+  if (config.debug && !reqId) {
     document.body.appendChild(stats.dom);
     reqId = requestAnimationFrame(function loop() {
       stats.update();
       reqId = requestAnimationFrame(loop);
     });
-  } else if (reqId) {
+  } else if (!config.debug && reqId) {
     cancelAnimationFrame(reqId);
     reqId = undefined;
     document.body.removeChild(stats.dom);
