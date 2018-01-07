@@ -7,16 +7,13 @@ const resetCanvas = (canvas, configuration) => {
   }
 };
 
-const scalingFactorX = Math.max(5, Math.floor(window.innerWidth / 1024));
-const scalingFactorY = Math.max(5, Math.floor(window.innerHeight / 1024));
-
 export const wasmTapestryFactory = WasmModule => (configuration, state) => {
   console.log("Running the WASM implementation!");
   console.log("Window size: ", window.innerWidth, window.innerHeight);
   const canvas = document.createElement("canvas");
 
   resetCanvas(canvas, configuration);
-  const { width, height } = configuration;
+  const { width, height, cellSize } = configuration;
   console.time("initialization");
   const tapestry = new WasmModule.Tapestry(width, height);
   console.timeEnd("initialization");
@@ -29,7 +26,7 @@ export const wasmTapestryFactory = WasmModule => (configuration, state) => {
 
   const context = canvas.getContext("2d");
   const displayContext = displayCanvas.getContext("2d");
-  displayContext.scale(scalingFactorX, scalingFactorY);
+  displayContext.scale(cellSize, cellSize);
 
   return setInterval(() => {
     console.time("wasm extract image");

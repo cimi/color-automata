@@ -6,7 +6,12 @@ import { getConfig, updateConfig } from "./store";
 export const startTapestry = () => {
   const config = getConfig();
   console.log("Starting animation with config ", config);
+
   clearInterval(config.currentIntervalId);
+  Object.assign(config, {
+    width: Math.floor(window.innerWidth / config.cellSize),
+    height: Math.floor(window.innerHeight / config.cellSize)
+  });
 
   setupLogging(config);
   setupStats(config);
@@ -60,7 +65,7 @@ export const openConfigurationModal = () => {
     input: `<div id="configuration-form">
         <div class="grid-size">
           <span>Cell size</span>
-          ${input(config, "height")} ${input(config, "width")}
+          ${input(config, "cellSize")}
         </div>
         <div class="implementation">
           <span>Implementation</span>

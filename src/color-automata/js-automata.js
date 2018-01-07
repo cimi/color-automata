@@ -241,7 +241,6 @@ export const jsTapestry = configuration => {
   const { width: displayWidth, height: displayHeight } = displayCanvas;
 
   console.log("Running the pure JS implementation!");
-  console.log(windowWidth, windowHeight);
   console.log("Window size: ", displayWidth, displayHeight);
   console.log("Grid size: ", gridWidth, gridHeight);
 
