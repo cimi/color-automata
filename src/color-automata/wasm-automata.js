@@ -7,43 +7,57 @@ const resetCanvas = (canvas, configuration) => {
   }
 };
 
-export const wasmTapestryFactory = WasmModule => (configuration, state) => {
-  console.log("Running the WASM implementation!");
-  console.log("Window size: ", window.innerWidth, window.innerHeight);
-  const canvas = document.createElement("canvas");
+export const wasmTapestryFactory = WasmModule => {
+  let tapestry;
+  return configuration => {
+    console.log("Running the WASM implementation!");
+    console.log("Window size: ", window.innerWidth, window.innerHeight);
+    const canvas = document.createElement("canvas");
 
-  resetCanvas(canvas, configuration);
-  const { width, height, cellSize } = configuration;
-  console.time("initialization");
-  const tapestry = new WasmModule.Tapestry(width, height);
-  console.timeEnd("initialization");
+    resetCanvas(canvas, configuration);
+    const { width, height, cellSize } = configuration;
 
-  const displayCanvas = document.getElementById(configuration.canvasId);
-  resetCanvas(displayCanvas, {
-    width: window.innerWidth,
-    height: window.innerHeight
-  });
+    console.time("initialization");
+    if (tapestry) {
+      tapestry.reset(width, height);
+    } else {
+      tapestry = new WasmModule.Tapestry(width, height);
+    }
+    console.timeEnd("initialization");
 
-  const context = canvas.getContext("2d");
-  const displayContext = displayCanvas.getContext("2d");
-  displayContext.scale(cellSize, cellSize);
+    const displayCanvas = document.getElementById(configuration.canvasId);
+    resetCanvas(displayCanvas, {
+      width: window.innerWidth,
+      height: window.innerHeight
+    });
 
-  return setInterval(() => {
-    console.time("wasm extract image");
-    const tile = tapestry.fullImage();
-    console.timeEnd("wasm extract image");
+    const context = canvas.getContext("2d");
+    const displayContext = displayCanvas.getContext("2d");
+    // reset transform to indentity so scales do not compound
+    displayContext.setTransform(1, 0, 0, 1, 0, 0);
+    displayContext.scale(cellSize, cellSize);
 
-    console.time("canvas put image data");
-    const imageData = new ImageData(new Uint8ClampedArray(tile), width, height);
-    context.putImageData(imageData, 0, 0);
-    console.timeEnd("canvas put image data");
+    return setInterval(() => {
+      console.time("wasm extract image");
+      const tile = tapestry.fullImage();
+      console.timeEnd("wasm extract image");
 
-    console.time("canvas scale other image");
-    displayContext.drawImage(canvas, 0, 0);
-    console.timeEnd("canvas scale other image");
+      console.time("canvas put image data");
+      const imageData = new ImageData(
+        new Uint8ClampedArray(tile),
+        width,
+        height
+      );
+      context.putImageData(imageData, 0, 0);
+      console.timeEnd("canvas put image data");
 
-    console.time("wasm compute image");
-    tapestry.tick();
-    console.timeEnd("wasm compute image");
-  }, 1000 / 30);
+      console.time("canvas scale other image");
+      displayContext.drawImage(canvas, 0, 0);
+      console.timeEnd("canvas scale other image");
+
+      console.time("wasm compute image");
+      tapestry.tick();
+      console.timeEnd("wasm compute image");
+    }, 1000 / 30);
+  };
 };
