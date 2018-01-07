@@ -15,28 +15,30 @@ typedef struct {
   int y;
 } pos;
 
-const int TILE_SIZE = 1024;
-
 class Tapestry {
 private:
   int width;
   int height;
-
-  // The image buffer handed back to JS for rendering into canvas
-  // The image format that imageData expects is four unsigned bytes: red,
-  // green, blue, alpha
-  uint8_t buffer[TILE_SIZE * TILE_SIZE * 4];
 
   pixel *colorPrimary = nullptr;
   pixel *colorBuffer = nullptr;
   pixel *velocityPrimary = nullptr;
   pixel *velocityBuffer = nullptr;
 
+  uint8_t *outputBuffer = nullptr;
+
   // we've learned vectors now
   std::vector<std::vector<pos>> neighbors;
 
   pixel *initBuffer() {
     return (pixel *)malloc(this->width * this->height * sizeof(pixel));
+  }
+
+  uint8_t *initOutputBuffer() {
+    // The image buffer handed back to JS for rendering into canvas
+    // The image format that imageData expects is four unsigned bytes: red,
+    // green, blue, alpha
+    return (uint8_t *)malloc(this->width * this->height * 4);
   }
 
   pixel *initBufferToRandomColors() {
@@ -173,6 +175,7 @@ public:
     free(this->colorBuffer);
     free(this->velocityPrimary);
     free(this->velocityBuffer);
+    free(this->outputBuffer);
   }
 
   void reset(int width, int height) {
@@ -182,6 +185,7 @@ public:
     this->width = width;
     this->height = height;
 
+    this->outputBuffer = this->initOutputBuffer();
     this->colorPrimary = this->initBufferToRandomColors();
     this->colorBuffer = this->initBuffer();
     this->copyBufferValues(this->colorPrimary, this->colorBuffer);
@@ -251,14 +255,14 @@ public:
       for (int x = 0; x < this->width; x++) {
         // copy the color values from color primary into the buffer that gets returned to JS
         int addr = x + y * this->width;
-        this->buffer[addr * 4 + 0] = this->colorPrimary[addr].r;
-        this->buffer[addr * 4 + 1] = this->colorPrimary[addr].g;
-        this->buffer[addr * 4 + 2] = this->colorPrimary[addr].b;
-        this->buffer[addr * 4 + 3] = 255;
+        this->outputBuffer[addr * 4 + 0] = this->colorPrimary[addr].r;
+        this->outputBuffer[addr * 4 + 1] = this->colorPrimary[addr].g;
+        this->outputBuffer[addr * 4 + 2] = this->colorPrimary[addr].b;
+        this->outputBuffer[addr * 4 + 3] = 255;
       }
     }
 
-    return emscripten::val(emscripten::typed_memory_view(bufferSize, this->buffer));
+    return emscripten::val(emscripten::typed_memory_view(bufferSize, this->outputBuffer));
   }
 };
 
