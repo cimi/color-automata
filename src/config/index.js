@@ -1,2 +1,6 @@
-export { openConfigurationModal, startTapestry } from "./control";
-export { updateConfig } from "./store";
+export {
+  openConfigurationModal,
+  openWarningModal,
+  startTapestry
+} from "./control";
+export { getConfig, updateConfig } from "./store";

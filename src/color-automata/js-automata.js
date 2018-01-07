@@ -229,14 +229,19 @@ export const jsTapestry = configuration => {
   const displayCanvas = document.getElementById(canvasId);
   const context = displayCanvas.getContext("2d");
 
-  const { width: gridWidth, height: gridHeight } = configuration;
-  const { width: displayWidth, height: displayHeight } = displayCanvas;
   const { innerWidth: windowWidth, innerHeight: windowHeight } = window;
 
   context.canvas.width = windowWidth;
   context.canvas.height = windowHeight;
 
+  displayCanvas.width = windowWidth;
+  displayCanvas.height = windowHeight;
+
+  const { width: gridWidth, height: gridHeight } = configuration;
+  const { width: displayWidth, height: displayHeight } = displayCanvas;
+
   console.log("Running the pure JS implementation!");
+  console.log(windowWidth, windowHeight);
   console.log("Window size: ", displayWidth, displayHeight);
   console.log("Grid size: ", gridWidth, gridHeight);
 

@@ -23,10 +23,10 @@ export const startTapestry = () => {
 const input = (config, name, type = "number") =>
   `<input name="${name}" type="${type}" value="${config[name]}"></input>`;
 
-const radio = (config, name, value) =>
+const radio = (config, name, value, disabled = false) =>
   `<input name="${name}" type="radio" value="${value}" ${
     config[name] === value ? "checked" : ""
-  } />`;
+  } ${disabled === true ? "disabled" : ""} />`;
 
 const checkbox = (config, name) =>
   `<input type="checkbox" name="${name}" value="on" ${
@@ -39,6 +39,14 @@ const adjustTypes = config =>
     height: Number(config.height),
     debug: config.debug === "on"
   });
+
+export const openWarningModal = () => {
+  vex.dialog.alert({
+    unsafeMessage: `<h4>Web assembly not supported!</h4>
+    <p>Falling back to the (slower) pure JavaScript implementation.</p>`,
+    callback: () => startTapestry(getConfig())
+  });
+};
 
 // TODO: configure cell size instead of choosing width and height
 // that way there's no distortion and you can play better with granularity
@@ -57,7 +65,12 @@ export const openConfigurationModal = () => {
         <div class="implementation">
           <span>Implementation</span>
           <label>${radio(config, "implementation", "js")} JS</label>
-          <label>${radio(config, "implementation", "wasm")} WASM</label>
+          <label>${radio(
+            config,
+            "implementation",
+            "wasm",
+            !config.webAssemblySupported
+          )} WASM</label>
         </div>
         <div class="show-fps">
           <span></span>
