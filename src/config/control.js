@@ -53,15 +53,13 @@ export const openWarningModal = () => {
   });
 };
 
-// TODO: configure cell size instead of choosing width and height
-// that way there's no distortion and you can play better with granularity
 export const openConfigurationModal = () => {
   const config = getConfig();
   vex.dialog.buttons.YES.text = "Reset";
-  // TODO: currently running configuration instead of description
   vex.dialog.open({
-    message: `This visualisation emerges from combining a cellular automaton
-    with a flocking algorithm. Tweak the settings below for different output.`,
+    message: `Change the cell size to a smaller value to get higher resolution.
+    More cells means more processing needed (slower). Debug mode enables console
+    logging and shows an FPS counter.`,
     input: `<div id="configuration-form">
         <div class="grid-size">
           <span>Cell size</span>
