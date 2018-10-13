@@ -50,7 +50,7 @@ export const wasmTapestryFactory = WasmModule => {
     // reset transform to indentity so scales do not compound
     displayContext.setTransform(1, 0, 0, 1, 0, 0);
     displayContext.scale(cellSize, cellSize);
-
+    console.log(configuration.updatesPerSecond);
     return setInterval(() => {
       console.time("wasm extract image");
       const tile = tapestry.fullImage();
@@ -72,6 +72,6 @@ export const wasmTapestryFactory = WasmModule => {
       console.time("wasm compute image");
       tapestry.tick();
       console.timeEnd("wasm compute image");
-    }, 1000 / 30);
+    }, configuration.cycleTimeMs);
   };
 };

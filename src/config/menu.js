@@ -11,6 +11,7 @@ const webAssemblySupported = isWebAssemblySupported();
 const menu = {
   runtime: webAssemblySupported ? "WASM" : "JavaScript",
   showFps: false,
+  cycleTimeMs: 1000 / 60,
   cellSize,
   minDist: 8,
   sepNormMag: 4.0,
@@ -28,6 +29,7 @@ const getConfig = () => ({
   ease: menu.ease,
   canvasId: "displayCanvas",
   debug: menu.showFps,
+  cycleTimeMs: menu.cycleTimeMs,
   webAssemblySupported,
   wasmTapestry,
   jsTapestry
@@ -42,7 +44,9 @@ const startAnimation = () => {
 menu.reset = startAnimation;
 
 const gui = new dat.GUI({
-  closeOnTop: true
+  closeOnTop: true,
+  autoplace: false,
+  width: 300
 });
 dat.GUI.toggleHide();
 
@@ -55,8 +59,14 @@ gui
   .name("Cell size")
   .min(1)
   .max(25)
-  .step(1)
-  .listen();
+  .step(1);
+
+gui
+  .add(menu, "cycleTimeMs")
+  .name("Speed (ms per cycle)")
+  .min(1)
+  .max(100);
+
 gui
   .add(menu, "minDist")
   .name("Minimum distance")

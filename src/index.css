@@ -79,3 +79,11 @@ div {
 /*    input[type=number] {
   width: 100px;
 }*/
+
+.color-automata .dg .property-name {
+  width: 50%;
+}
+
+.color-automata .dg .c {
+  width: 50%;
+}

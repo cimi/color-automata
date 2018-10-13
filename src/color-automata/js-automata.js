@@ -261,6 +261,8 @@ export const jsTapestry = configuration => {
 
   displayCanvas.addEventListener("click", restart(list), false);
 
-  // we aim for 30 fps
-  return setInterval(tick(list, cellSize, context, options), 1000 / 30);
+  return setInterval(
+    tick(list, cellSize, context, options),
+    configuration.cycleTimeMs
+  );
 };
