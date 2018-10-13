@@ -31,57 +31,24 @@ a {
 #displayCanvas {
   z-index: 0;
 }
-div {
+
+#displayCanvas:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
 }
+
 #container {
   width: 100%;
   height: 100%;
   margin: auto;
 }
 
-#configuration-form div {
-  clear: both;
-}
-#configuration-form span {
-  display: inline-block;
-  line-height: 2.5em;
-  width: 40%;
-  text-align: left;
-}
-#configuration-form input[type="number"] {
-  width: 25%;
-  float: right;
-  margin-right: 5px;
-}
-
-#configuration-form .implementation label {
-  float: right;
-  width: 25%;
-}
-
-#configuration-form .implementation label input {
-  margin-right: 5px;
-}
-
-#configuration-form .show-fps label {
-  float: right;
-  width: 50%;
-}
-
-#configuration-form .show-fps label input {
-  padding-right: 5px;
-}
-
-#configuration-form .credits {
-  clear: both;
-  text-align: center;
-}
-/*    input[type=number] {
-  width: 100px;
-}*/
-
 .color-automata .dg .property-name {
   width: 50%;
+}
+
+.color-automata .dg .boolean .property-name {
+  width: 100%;
 }
 
 .color-automata .dg .c {
