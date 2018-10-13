@@ -11,7 +11,10 @@ const webAssemblySupported = isWebAssemblySupported();
 const menu = {
   runtime: webAssemblySupported ? "WASM" : "JavaScript",
   showFps: false,
-  cellSize
+  cellSize,
+  minDist: 8,
+  sepNormMag: 4.0,
+  ease: 0.67
 };
 
 let wasmTapestry;
@@ -20,6 +23,9 @@ let intervalId;
 const getConfig = () => ({
   implementation: menu.runtime === "WASM" ? "wasm" : "js",
   cellSize: menu.cellSize,
+  minDist: menu.minDist,
+  sepNormMag: menu.sepNormMag,
+  ease: menu.ease,
   canvasId: "displayCanvas",
   debug: menu.showFps,
   webAssemblySupported,
@@ -52,13 +58,32 @@ gui
   .step(1)
   .listen();
 gui
+  .add(menu, "minDist")
+  .name("Minimum distance")
+  .min(1)
+  .max(30)
+  .step(1)
+  .listen();
+gui
+  .add(menu, "sepNormMag")
+  .name("Separation")
+  .min(1)
+  .max(10)
+  .listen();
+gui
+  .add(menu, "ease")
+  .name("Ease")
+  .min(0)
+  .max(1)
+  .listen();
+
+gui
   .add(menu, "runtime", ["WASM", "JavaScript"])
   .name("Runtime")
   .listen();
-gui.add(menu, "reset").name("Reset");
+gui.add(menu, "reset").name("Apply changes");
 
 load().then(loaded => {
-  debugger;
   wasmTapestry = loaded.wasmTapestry;
   jsTapestry = loaded.jsTapestry;
   startAnimation();

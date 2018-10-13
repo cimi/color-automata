@@ -19,6 +19,9 @@ class Tapestry {
 private:
   int width;
   int height;
+  double minDistSquare;
+  double sepNormMag;
+  double ease;
 
   pixel *colorPrimary = nullptr;
   pixel *colorBuffer = nullptr;
@@ -164,7 +167,12 @@ private:
   }
 
 public:
-  Tapestry(int width, int height) : width(width), height(height) {
+  Tapestry(int width, int height, double minDistSquare, double sepNormMag, double ease) : 
+    width(width), 
+    height(height),
+    minDistSquare(minDistSquare),
+    sepNormMag(sepNormMag),
+    ease(ease) {
     // seed the random number generator as it drives initial state
     std::srand(std::time(0));
     this->reset(width, height);
@@ -195,10 +203,6 @@ public:
   }
 
   void tick() {
-    double minDistSquare = 64.0;
-    double sepNormMag = 4.0;
-    double ease = 0.67;
-
     for (int y = 0; y < this->height; y++) {
       for (int x = 0; x < this->width; x++) {
         int cellOffset = getOffset(x, y);
@@ -216,7 +220,7 @@ public:
           pixel d = {.r = 0, .g = 0, .b = 0};
           subtract(&this->colorPrimary[cellOffset], &this->colorPrimary[neighborOffset], &d);
 
-          if (sumOfSquares(&d) < minDistSquare) {
+          if (sumOfSquares(&d) < this->minDistSquare) {
             add(&d, &sep, &sep);
           }
         }
@@ -229,14 +233,14 @@ public:
         if ((abs(sep.r) > 0.00001) || (abs(sep.g) > 0.00001) || (abs(sep.b) > 0.00001)) {
 
           double length = sqrt(sumOfSquares(&sep));
-          scale(&sep, sepNormMag / length, &sep);
+          scale(&sep, this->sepNormMag / length, &sep);
         }
 
         // update velocity by combining separation, alignment and cohesion effects
         // change velocity only by 'ease' ratio
-        this->velocityBuffer[cellOffset].r += ease * (sep.r + velocityAverage.r + colorAverage.r - this->colorPrimary[cellOffset].r - this->velocityBuffer[cellOffset].r);
-        this->velocityBuffer[cellOffset].g += ease * (sep.g + velocityAverage.g + colorAverage.g - this->colorPrimary[cellOffset].g - this->velocityBuffer[cellOffset].g);
-        this->velocityBuffer[cellOffset].b += ease * (sep.b + velocityAverage.b + colorAverage.b - this->colorPrimary[cellOffset].b - this->velocityBuffer[cellOffset].b);
+        this->velocityBuffer[cellOffset].r += this->ease * (sep.r + velocityAverage.r + colorAverage.r - this->colorPrimary[cellOffset].r - this->velocityBuffer[cellOffset].r);
+        this->velocityBuffer[cellOffset].g += this->ease * (sep.g + velocityAverage.g + colorAverage.g - this->colorPrimary[cellOffset].g - this->velocityBuffer[cellOffset].g);
+        this->velocityBuffer[cellOffset].b += this->ease * (sep.b + velocityAverage.b + colorAverage.b - this->colorPrimary[cellOffset].b - this->velocityBuffer[cellOffset].b);
 
         // update colors according to color velocities
         add(&this->velocityBuffer[cellOffset], &this->colorBuffer[cellOffset], &this->colorBuffer[cellOffset]);
@@ -268,7 +272,7 @@ public:
 
 EMSCRIPTEN_BINDINGS(hello) {
   emscripten::class_<Tapestry>("Tapestry")
-      .constructor<int, int>()
+      .constructor<int, int, double, double, double>()
       .function("reset", &Tapestry::reset)
       .function("fullImage", &Tapestry::fullImage)
       .function("tick", &Tapestry::tick);

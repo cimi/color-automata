@@ -15,13 +15,27 @@ export const wasmTapestryFactory = WasmModule => {
     const canvas = document.createElement("canvas");
 
     resetCanvas(canvas, configuration);
-    const { width, height, cellSize } = configuration;
+    const {
+      width,
+      height,
+      cellSize,
+      minDist,
+      sepNormMag,
+      ease
+    } = configuration;
+    const minDistSquared = minDist * minDist;
 
     console.time("initialization");
     if (tapestry) {
       tapestry.reset(width, height);
     } else {
-      tapestry = new WasmModule.Tapestry(width, height);
+      tapestry = new WasmModule.Tapestry(
+        width,
+        height,
+        minDistSquared,
+        sepNormMag,
+        ease
+      );
     }
     console.timeEnd("initialization");
 

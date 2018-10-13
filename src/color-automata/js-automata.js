@@ -250,11 +250,11 @@ export const jsTapestry = configuration => {
   };
 
   const options = {
-    ease: 0.67,
+    ease: configuration.ease,
     velMax: 255,
-    minDist: 8,
-    minDistSquare: 64,
-    sepNormMag: 4
+    minDist: configuration.minDist,
+    minDistSquare: configuration.minDist * configuration.minDist,
+    sepNormMag: configuration.sepNormMag
   };
 
   const list = createCells(cellSize, gridWidth, gridHeight);
