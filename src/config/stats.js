@@ -8,15 +8,15 @@ function makeStats() {
 }
 
 let reqId;
-export const setupStats = config => {
+export const showFpsCounter = enabled => {
   const stats = makeStats();
-  if (config.debug && !reqId) {
+  if (enabled && !reqId) {
     document.body.appendChild(stats.dom);
     reqId = requestAnimationFrame(function loop() {
       stats.update();
       reqId = requestAnimationFrame(loop);
     });
-  } else if (!config.debug && reqId) {
+  } else if (!enabled && reqId) {
     cancelAnimationFrame(reqId);
     reqId = undefined;
     document.body.removeChild(stats.dom);

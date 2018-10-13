@@ -5,7 +5,7 @@ const originalConsole = {
   time: console.time,
   timeEnd: console.timeEnd
 };
-const dummyConsole = { log: noop, time: noop, timeEnd: noop };
+const dummyConsole = { log: originalConsole.log, time: noop, timeEnd: noop };
 
 export const setupLogging = config =>
   // if debugging is enabled, use the console otherwise don't
