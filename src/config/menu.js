@@ -52,6 +52,8 @@ menu.fullScreen = () => {
     canvas.requestFullscreen();
   } else if (canvas.webkitRequestFullScreen) {
     menu.hide();
+    menu.showOctocat = false;
+    toggleOctocat(false);
     canvas.webkitRequestFullScreen();
   }
 };
@@ -66,6 +68,8 @@ const gui = new dat.GUI({
   autoplace: false,
   width: 300
 });
+
+gui.add(menu, "fullScreen").name("Full screen");
 
 const basicTuning = gui.addFolder("Configuration");
 basicTuning
@@ -83,7 +87,6 @@ basicTuning
   .name("Speed (ms per cycle)")
   .min(0)
   .max(100);
-basicTuning.open();
 
 const fineTuning = basicTuning.addFolder("Fine Tuning");
 basicTuning.add(menu, "reset").name("Apply changes");
@@ -93,20 +96,22 @@ fineTuning.add(menu, "sepNormMag").name("Separation");
 fineTuning.add(menu, "ease").name("Ease");
 
 const actions = gui.addFolder("Other Actions");
-actions.add(menu, "fullScreen").name("Full screen");
 actions.add(menu, "hide").name("Hide menu (press 'H')");
 actions
   .add(menu, "showFps")
   .name("Show FPS")
   .onChange(showFpsCounter);
+
+const toggleOctocat = enabled => {
+  document.getElementsByClassName("github-corner")[0].style.display = enabled
+    ? "block"
+    : "none";
+};
 actions
   .add(menu, "showOctocat")
   .name("Show github corner")
-  .onChange(enabled => {
-    document.getElementsByClassName("github-corner")[0].style.display = enabled
-      ? "block"
-      : "none";
-  });
+  .onChange(toggleOctocat)
+  .listen();
 actions.add(menu, "githubLink").name("View source on GitHub");
 
 gui.close();
