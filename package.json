@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "dat.gui": "^0.7.0",
     "stats.js": "^0.17.0",
     "vex-js": "^4.0.0"
   },
