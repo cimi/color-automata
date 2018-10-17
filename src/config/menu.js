@@ -1,10 +1,10 @@
 import * as dat from "dat.gui";
 
 import { load } from "./load";
+import { randomImage, sparseImage, loadImageAsync } from "./image-generators";
 import { startTapestry } from "./control";
 import { showFpsCounter } from "./stats";
 
-const cellSize = Math.max(5, Math.floor(window.innerWidth / 1024));
 const isWebAssemblySupported = () => typeof window.WebAssembly === "object";
 const webAssemblySupported = isWebAssemblySupported();
 
@@ -13,7 +13,7 @@ const menu = {
   showFps: false,
   showOctocat: true,
   cycleTimeMs: 1000 / 60,
-  cellSize,
+  cellSize: 2, // Math.max(5, Math.floor(window.innerWidth / 1024)),
   minDist: 8,
   sepNormMag: 4.0,
   ease: 0.67,
@@ -25,19 +25,29 @@ const menu = {
 let wasmTapestry;
 let jsTapestry;
 let intervalId;
-const getConfig = () => ({
-  implementation: menu.runtime === "WASM" ? "wasm" : "js",
-  cellSize: menu.cellSize,
-  minDist: menu.minDist,
-  sepNormMag: menu.sepNormMag,
-  ease: menu.ease,
-  canvasId: "displayCanvas",
-  debug: menu.showFps,
-  cycleTimeMs: menu.cycleTimeMs,
-  webAssemblySupported,
-  wasmTapestry,
-  jsTapestry
-});
+
+let seedImage;
+const getConfig = () => {
+  const width = Math.floor(window.innerWidth / menu.cellSize);
+  const height = Math.floor(window.innerHeight / menu.cellSize);
+  const img = seedImage ? seedImage : sparseImage(width, height);
+  return {
+    implementation: menu.runtime === "WASM" ? "wasm" : "js",
+    cellSize: menu.cellSize,
+    width,
+    height,
+    img,
+    minDist: menu.minDist,
+    sepNormMag: menu.sepNormMag,
+    ease: menu.ease,
+    canvasId: "displayCanvas",
+    debug: true,
+    cycleTimeMs: menu.cycleTimeMs,
+    webAssemblySupported,
+    wasmTapestry,
+    jsTapestry
+  };
+};
 
 const startAnimation = () => {
   clearInterval(intervalId);
@@ -58,6 +68,15 @@ menu.fullScreen = () => {
   }
 };
 
+menu.customSeed = () => {
+  const url = "london-skyline.jpg";
+  const { width, height } = getConfig();
+  loadImageAsync(url, width, height).then(image => {
+    seedImage = image;
+    startAnimation();
+  });
+};
+
 window.onresize = () => {
   if (wasmTapestry) {
     startAnimation();
@@ -70,6 +89,7 @@ const gui = new dat.GUI({
 });
 
 gui.add(menu, "fullScreen").name("Full screen");
+gui.add(menu, "customSeed").name("Custom seed");
 
 const basicTuning = gui.addFolder("Configuration");
 basicTuning
@@ -88,12 +108,12 @@ basicTuning
   .min(0)
   .max(100);
 
-const fineTuning = basicTuning.addFolder("Fine Tuning");
+// const fineTuning = basicTuning.addFolder("Fine Tuning");
 basicTuning.add(menu, "reset").name("Apply changes");
 
-fineTuning.add(menu, "minDist").name("Minimum distance");
-fineTuning.add(menu, "sepNormMag").name("Separation");
-fineTuning.add(menu, "ease").name("Ease");
+// fineTuning.add(menu, "minDist").name("Minimum distance");
+// fineTuning.add(menu, "sepNormMag").name("Separation");
+// fineTuning.add(menu, "ease").name("Ease");
 
 const actions = gui.addFolder("Other Actions");
 actions.add(menu, "hide").name("Hide menu (press 'H')");
@@ -119,7 +139,16 @@ gui.close();
 load().then(loaded => {
   wasmTapestry = loaded.wasmTapestry;
   jsTapestry = loaded.jsTapestry;
-  startAnimation();
+
+  const mondrian = "mondrian.jpg";
+  const mondrian2 = "mondrian-2.png";
+  const mondrian3 = "mondrian-3.png";
+  const londonSkyline = "london-skyline.jpg";
+  const { width, height } = getConfig();
+  loadImageAsync(mondrian3, width, height).then(image => {
+    seedImage = image;
+    startAnimation();
+  });
 });
 
 export { menu };

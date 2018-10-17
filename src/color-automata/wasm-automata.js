@@ -7,6 +7,16 @@ const resetCanvas = (canvas, configuration) => {
   }
 };
 
+const setImage = (WasmModule, image) => {
+  const createBuffer = WasmModule.cwrap("create_buffer", "number", [
+    "number",
+    "number"
+  ]);
+  const wasmPtr = createBuffer(image.width, image.height);
+  WasmModule.HEAP8.set(image.data, wasmPtr);
+  return wasmPtr;
+};
+
 export const wasmTapestryFactory = WasmModule => {
   let tapestry;
   return configuration => {
@@ -16,6 +26,7 @@ export const wasmTapestryFactory = WasmModule => {
 
     resetCanvas(canvas, configuration);
     const {
+      img,
       width,
       height,
       cellSize,
@@ -26,10 +37,12 @@ export const wasmTapestryFactory = WasmModule => {
     const minDistSquared = minDist * minDist;
 
     console.time("initialization");
+    const imageAddr = setImage(WasmModule, img);
     if (tapestry) {
-      tapestry.reset(width, height);
+      tapestry.reset(imageAddr, width, height);
     } else {
-      tapestry = new WasmModule.Tapestry(
+      tapestry = new WasmModule.ColorAutomata(
+        imageAddr,
         width,
         height,
         minDistSquared,
