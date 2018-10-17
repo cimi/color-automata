@@ -15,8 +15,9 @@ typedef struct {
   int y;
 } pos;
 
-class Tapestry {
+class ColorAutomata {
 private:
+  uint8_t *imagePtr;
   int width;
   int height;
   double minDistSquare;
@@ -52,6 +53,20 @@ private:
         output[addr].r = std::rand() % 255 + 1;
         output[addr].g = std::rand() % 255 + 1;
         output[addr].b = std::rand() % 255 + 1;
+      }
+    }
+    return output;
+  }
+
+  pixel *initBufferFromImage() {
+    pixel *output = this->initBuffer();
+    for (int y = 0; y < this->height; y++) {
+      for (int x = 0; x < this->width; x++) {
+        int idx = y * this->width + x;
+        output[idx].r = this->imagePtr[idx * 4];
+        output[idx].g = this->imagePtr[idx * 4 + 1];
+        output[idx].b = this->imagePtr[idx * 4 + 2];
+        // the next one is the alpha, which we don't play with yet
       }
     }
     return output;
@@ -167,15 +182,15 @@ private:
   }
 
 public:
-  Tapestry(int width, int height, double minDistSquare, double sepNormMag, double ease) : 
-    width(width), 
+  ColorAutomata(int imageAddr, int width, int height, double minDistSquare, double sepNormMag, double ease) :
+    width(width),
     height(height),
     minDistSquare(minDistSquare),
     sepNormMag(sepNormMag),
     ease(ease) {
     // seed the random number generator as it drives initial state
     std::srand(std::time(0));
-    this->reset(width, height);
+    this->reset(imageAddr, width, height);
   }
 
   void freeBuffers() {
@@ -186,7 +201,8 @@ public:
     free(this->outputBuffer);
   }
 
-  void reset(int width, int height) {
+  void reset(int imageAddr, int width, int height) {
+    this->imagePtr = (uint8_t*) imageAddr;
     if (this->colorPrimary != nullptr) {
       this->freeBuffers();
     }
@@ -194,7 +210,7 @@ public:
     this->height = height;
 
     this->outputBuffer = this->initOutputBuffer();
-    this->colorPrimary = this->initBufferToRandomColors();
+    this->colorPrimary = this->initBufferFromImage();
     this->colorBuffer = this->initBuffer();
     this->copyBufferValues(this->colorPrimary, this->colorBuffer);
     this->velocityPrimary = this->initBufferToZero();
@@ -271,9 +287,15 @@ public:
 };
 
 EMSCRIPTEN_BINDINGS(hello) {
-  emscripten::class_<Tapestry>("Tapestry")
-      .constructor<int, int, double, double, double>()
-      .function("reset", &Tapestry::reset)
-      .function("fullImage", &Tapestry::fullImage)
-      .function("tick", &Tapestry::tick);
+  emscripten::class_<ColorAutomata>("ColorAutomata")
+      .constructor<int, int, int, double, double, double>()
+      .function("reset", &ColorAutomata::reset)
+      .function("fullImage", &ColorAutomata::fullImage)
+      .function("tick", &ColorAutomata::tick);
+}
+
+extern "C" {
+  uint8_t* create_buffer(int width, int height) {
+    return (uint8_t*) malloc(width * height * 4 * sizeof(uint8_t));
+  }
 }
