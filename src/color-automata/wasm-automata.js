@@ -25,17 +25,9 @@ export const wasmTapestryFactory = WasmModule => {
     const canvas = document.createElement("canvas");
 
     resetCanvas(canvas, configuration);
-    const {
-      img,
-      width,
-      height,
-      cellSize,
-      minDist,
-      sepNormMag,
-      ease
-    } = configuration;
+    const { img, cellSize, minDist, sepNormMag, ease } = configuration;
     const minDistSquared = minDist * minDist;
-
+    const { width, height } = img;
     console.time("initialization");
     const imageAddr = setImage(WasmModule, img);
     if (tapestry) {
@@ -63,8 +55,8 @@ export const wasmTapestryFactory = WasmModule => {
     // reset transform to indentity so scales do not compound
     displayContext.setTransform(1, 0, 0, 1, 0, 0);
     displayContext.scale(cellSize, cellSize);
-    console.log(configuration.updatesPerSecond);
-    return setInterval(() => {
+
+    const animate = () => {
       console.time("wasm extract image");
       const tile = tapestry.fullImage();
       console.timeEnd("wasm extract image");
@@ -85,6 +77,7 @@ export const wasmTapestryFactory = WasmModule => {
       console.time("wasm compute image");
       tapestry.tick();
       console.timeEnd("wasm compute image");
-    }, configuration.cycleTimeMs);
+    };
+    return setInterval(animate, configuration.cycleTimeMs);
   };
 };

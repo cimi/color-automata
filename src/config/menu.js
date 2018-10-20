@@ -1,19 +1,20 @@
 import * as dat from "dat.gui";
 
-import { load } from "./load";
-import { randomImage, sparseImage, loadImageAsync } from "./image-generators";
-import { startTapestry } from "./control";
+import { load, loadImages } from "./load";
+import { randomImage, sparseImage, scaleImage } from "./image-generators";
+import { setupAutomata } from "./control";
 import { showFpsCounter } from "./stats";
 
 const isWebAssemblySupported = () => typeof window.WebAssembly === "object";
 const webAssemblySupported = isWebAssemblySupported();
+const randomFrom = arr => arr[Math.floor(Math.random() * arr.length)];
 
 const menu = {
   runtime: webAssemblySupported ? "WASM" : "JavaScript",
   showFps: false,
   showOctocat: true,
   cycleTimeMs: 1000 / 60,
-  cellSize: 2, // Math.max(5, Math.floor(window.innerWidth / 1024)),
+  cellSize: 4, // Math.max(5, Math.floor(window.innerWidth / 1024)),
   minDist: 8,
   sepNormMag: 4.0,
   ease: 0.67,
@@ -26,55 +27,50 @@ let wasmTapestry;
 let jsTapestry;
 let intervalId;
 
-let seedImage;
+let seedImages;
 const getConfig = () => {
   const width = Math.floor(window.innerWidth / menu.cellSize);
   const height = Math.floor(window.innerHeight / menu.cellSize);
-  const img = seedImage ? seedImage : sparseImage(width, height);
+  const images = seedImages
+    ? seedImages.map(image => scaleImage(image, width, height))
+    : undefined;
+  const img = images ? randomFrom(images) : randomImage(width, height);
   return {
-    implementation: menu.runtime === "WASM" ? "wasm" : "js",
-    cellSize: menu.cellSize,
+    ...menu,
     width,
     height,
     img,
-    minDist: menu.minDist,
-    sepNormMag: menu.sepNormMag,
-    ease: menu.ease,
     canvasId: "displayCanvas",
-    debug: true,
-    cycleTimeMs: menu.cycleTimeMs,
-    webAssemblySupported,
-    wasmTapestry,
-    jsTapestry
+    debug: false,
+    automataFactory: function() {
+      if (menu.runtime === "WASM") {
+        return wasmTapestry(this);
+      } else {
+        return jsTapestry(this);
+      }
+    }
   };
 };
 
 const startAnimation = () => {
   clearInterval(intervalId);
   const config = getConfig();
-  intervalId = startTapestry(config);
+  intervalId = setupAutomata(config);
 };
 
 menu.reset = startAnimation;
 menu.fullScreen = () => {
-  const canvas = document.body; //document.getElementById("displayCanvas");
-  if (canvas.requestFullscreen) {
-    canvas.requestFullscreen();
-  } else if (canvas.webkitRequestFullScreen) {
+  const requestFullscreen =
+    document.body.requestFullscreen ||
+    document.body.msRequestFullscreen ||
+    document.body.mozRequestFullScreen ||
+    document.body.webkitRequestFullscreen;
+  if (requestFullscreen) {
     menu.hide();
     menu.showOctocat = false;
     toggleOctocat(false);
-    canvas.webkitRequestFullScreen();
+    requestFullscreen.call(document.body);
   }
-};
-
-menu.customSeed = () => {
-  const url = "london-skyline.jpg";
-  const { width, height } = getConfig();
-  loadImageAsync(url, width, height).then(image => {
-    seedImage = image;
-    startAnimation();
-  });
 };
 
 window.onresize = () => {
@@ -89,7 +85,6 @@ const gui = new dat.GUI({
 });
 
 gui.add(menu, "fullScreen").name("Full screen");
-gui.add(menu, "customSeed").name("Custom seed");
 
 const basicTuning = gui.addFolder("Configuration");
 basicTuning
@@ -140,15 +135,24 @@ load().then(loaded => {
   wasmTapestry = loaded.wasmTapestry;
   jsTapestry = loaded.jsTapestry;
 
-  const mondrian = "mondrian.jpg";
-  const mondrian2 = "mondrian-2.png";
-  const mondrian3 = "mondrian-3.png";
-  const londonSkyline = "london-skyline.jpg";
-  const { width, height } = getConfig();
-  loadImageAsync(mondrian3, width, height).then(image => {
-    seedImage = image;
+  const files = [
+    // "ohbs-crop.jpg",
+    // "ohbs-full.jpg",
+    "carlos-cruz-diez.jpg",
+    // "carlos-cruz-diez-2.jpg",
+    "mondrian.jpg",
+    "mondrian-2.png",
+    "mondrian-3.png"
+  ];
+  loadImages(files).then(images => {
+    seedImages = images;
     startAnimation();
   });
 });
+
+setInterval(() => {
+  startAnimation();
+  console.log("restarted");
+}, 3 * 1000);
 
 export { menu };
