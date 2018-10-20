@@ -1,3 +1,5 @@
+import FpsThrottler from "./fps-throttler";
+
 const randomColor = () => ({
   r: Math.random() * 255,
   g: Math.random() * 255,
@@ -260,9 +262,6 @@ export const jsTapestry = configuration => {
   const list = createCells(cellSize, gridWidth, gridHeight);
 
   displayCanvas.addEventListener("click", restart(list), false);
-
-  return setInterval(
-    tick(list, cellSize, context, options),
-    configuration.cycleTimeMs
-  );
+  const animate = tick(list, cellSize, context, options);
+  return new FpsThrottler(configuration.fps, animate);
 };

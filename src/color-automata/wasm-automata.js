@@ -1,3 +1,5 @@
+import FpsThrottler from "./fps-throttler";
+
 const resetCanvas = (canvas, configuration) => {
   const { width, height } = configuration;
   console.log("Resetting canvas to match grid configuration: ", width, height);
@@ -78,6 +80,6 @@ export const wasmTapestryFactory = WasmModule => {
       tapestry.tick();
       console.timeEnd("wasm compute image");
     };
-    return setInterval(animate, configuration.cycleTimeMs);
+    return new FpsThrottler(configuration.fps, animate);
   };
 };

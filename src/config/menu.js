@@ -13,7 +13,7 @@ const menu = {
   runtime: webAssemblySupported ? "WASM" : "JavaScript",
   showFps: false,
   showOctocat: true,
-  cycleTimeMs: 1000 / 60,
+  fps: 10,
   cellSize: 4, // Math.max(5, Math.floor(window.innerWidth / 1024)),
   minDist: 8,
   sepNormMag: 4.0,
@@ -25,7 +25,7 @@ const menu = {
 // "View source on GitHub"
 let wasmTapestry;
 let jsTapestry;
-let intervalId;
+let automata;
 
 let seedImages;
 const getConfig = () => {
@@ -53,9 +53,10 @@ const getConfig = () => {
 };
 
 const startAnimation = () => {
-  clearInterval(intervalId);
-  const config = getConfig();
-  intervalId = setupAutomata(config);
+  if (automata) automata.pause();
+  automata = setupAutomata(getConfig());
+  automata.start();
+  console.log("started");
 };
 
 menu.reset = startAnimation;
@@ -97,11 +98,7 @@ basicTuning
   .min(1)
   .max(25)
   .step(1);
-basicTuning
-  .add(menu, "cycleTimeMs")
-  .name("Speed (ms per cycle)")
-  .min(0)
-  .max(100);
+basicTuning.add(menu, "fps", [1, 5, 10, 15, 30, 60]).name("Target FPS");
 
 // const fineTuning = basicTuning.addFolder("Fine Tuning");
 basicTuning.add(menu, "reset").name("Apply changes");
