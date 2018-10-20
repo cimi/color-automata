@@ -80,6 +80,8 @@ export const wasmTapestryFactory = WasmModule => {
       tapestry.tick();
       console.timeEnd("wasm compute image");
     };
+    animate();
+    animate();
     return new FpsThrottler(configuration.fps, animate);
   };
 };
