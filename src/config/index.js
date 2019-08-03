@@ -39,15 +39,15 @@ load().then(loaded => {
     // "mondrian-3.png"
   ];
   loadImages(files).then(images => {
-    context.seedImages = images;
+    // context.seedImages = images;
     context.initialized = true;
     context.startAnimation(menu.makeConfig());
   });
 });
 
-setInterval(() => {
-  context.startAnimation(menu.makeConfig());
-}, 10 * 1000);
+// setInterval(() => {
+//   context.startAnimation(menu.makeConfig());
+// }, 10 * 1000);
 
 window.onresize = () => {
   context.startAnimation(menu.makeConfig());
