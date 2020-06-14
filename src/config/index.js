@@ -2,7 +2,7 @@ import { setupLogging } from "./logging";
 import { load, loadImages } from "./load";
 import AutomataMenu from "./menu";
 
-export const setupAutomata = config => {
+export const setupAutomata = (config) => {
   console.log("Creating new automata: ", config);
   setupLogging(config);
 
@@ -20,25 +20,25 @@ const context = {
     if (this.automata) this.automata.pause();
     this.automata = setupAutomata(config);
     setTimeout(() => this.automata.start(), 750);
-  }
+  },
 };
 
 let menu = { makeConfig: () => {} };
 
-load().then(loaded => {
+load().then((loaded) => {
   context.wasmAutomata = loaded.wasmTapestry;
   context.jsAutomata = loaded.jsTapestry;
   menu = new AutomataMenu(context);
   const files = [
     // "ohbs-crop.jpg",
-    "ohbs-full.jpg"
+    // "ohbs-full.jpg"
     // "carlos-cruz-diez.jpg",
     // "carlos-cruz-diez-2.jpg",
     // "mondrian.jpg",
     // "mondrian-2.png",
     // "mondrian-3.png"
   ];
-  loadImages(files).then(images => {
+  loadImages(files).then((images) => {
     // context.seedImages = images;
     context.initialized = true;
     context.startAnimation(menu.makeConfig());
