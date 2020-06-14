@@ -1,5 +1,5 @@
 import { setupLogging } from "./logging";
-import { load, loadImages } from "./load";
+import { load } from "./load";
 import AutomataMenu from "./menu";
 
 export const setupAutomata = (config) => {
@@ -23,26 +23,15 @@ const context = {
   },
 };
 
-let menu = { makeConfig: () => {} };
+let menu;
 
-load().then((loaded) => {
-  context.wasmAutomata = loaded.wasmTapestry;
-  context.jsAutomata = loaded.jsTapestry;
+load().then((resources) => {
+  context.wasmAutomata = resources.wasm;
+  context.jsAutomata = resources.js;
+  context.seedImages = resources.img;
   menu = new AutomataMenu(context);
-  const files = [
-    // "ohbs-crop.jpg",
-    "ohbs-full.jpg",
-    // "carlos-cruz-diez.jpg",
-    // "carlos-cruz-diez-2.jpg",
-    // "mondrian.jpg",
-    // "mondrian-2.png",
-    // "mondrian-3.png"
-  ];
-  loadImages(files).then((images) => {
-    context.seedImages = images;
-    context.initialized = true;
-    context.startAnimation(menu.makeConfig());
-  });
+  context.initialized = true;
+  context.startAnimation(menu.makeConfig());
 });
 
 // setInterval(() => {
@@ -50,5 +39,7 @@ load().then((loaded) => {
 // }, 10 * 1000);
 
 window.onresize = () => {
-  context.startAnimation(menu.makeConfig());
+  if (menu) {
+    context.startAnimation(menu.makeConfig());
+  }
 };

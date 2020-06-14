@@ -1,21 +1,37 @@
 import WasmLoader from "../wasm-loader";
 import { wasmTapestryFactory, jsTapestry } from "../color-automata";
 
-const loadImage = (src) => {
-  return fetch("color-automata/" + src)
-    .then((resp) => resp.blob())
-    .then((blob) => createImageBitmap(blob))
-    .catch((err) => console.log(err));
-};
+const path = "color-automata/";
 
-export const loadImages = (urls) => Promise.all(urls.map(loadImage));
+async function loadWasm() {
+  const wasmBinary = path + "color-automata.wasm";
+  const wasmModule = await WasmLoader({ locateFile: () => wasmBinary });
+  return wasmTapestryFactory(wasmModule);
+}
 
-export const load = () =>
-  new Promise((resolve, reject) => {
-    const wasmBinary = "color-automata/color-automata.wasm";
-    WasmLoader({ locateFile: () => wasmBinary }).then((wasmModule) => {
-      console.log(wasmBinary, "loaded");
-      const wasmTapestry = wasmTapestryFactory(wasmModule);
-      resolve({ jsTapestry, wasmTapestry });
-    });
-  });
+async function loadImage(src) {
+  const resp = await fetch(path + src);
+  const blob = await resp.blob();
+  return createImageBitmap(blob);
+}
+
+async function loadImages() {
+  const files = [
+    // "ohbs-crop.jpg",
+    "ohbs-full.jpg",
+    // "carlos-cruz-diez.jpg",
+    // "carlos-cruz-diez-2.jpg",
+    // "mondrian.jpg",
+    // "mondrian-2.png",
+    // "mondrian-3.png"
+  ];
+  return Promise.all(files.map(loadImage));
+}
+
+export async function load() {
+  return {
+    wasm: await loadWasm(),
+    js: jsTapestry,
+    img: await loadImages(),
+  };
+}
