@@ -2,7 +2,7 @@ import WasmLoader from "../wasm-loader";
 import { wasmTapestryFactory, jsTapestry } from "../color-automata";
 
 const loadImage = (src) => {
-  return fetch(src)
+  return fetch("color-automata/" + src)
     .then((resp) => resp.blob())
     .then((blob) => createImageBitmap(blob))
     .catch((err) => console.log(err));

@@ -31,7 +31,7 @@ load().then((loaded) => {
   menu = new AutomataMenu(context);
   const files = [
     // "ohbs-crop.jpg",
-    // "ohbs-full.jpg"
+    "ohbs-full.jpg",
     // "carlos-cruz-diez.jpg",
     // "carlos-cruz-diez-2.jpg",
     // "mondrian.jpg",
@@ -39,7 +39,7 @@ load().then((loaded) => {
     // "mondrian-3.png"
   ];
   loadImages(files).then((images) => {
-    // context.seedImages = images;
+    context.seedImages = images;
     context.initialized = true;
     context.startAnimation(menu.makeConfig());
   });
