@@ -18,7 +18,7 @@ async function loadImage(src) {
 async function loadImages() {
   const files = [
     // "ohbs-crop.jpg",
-    "ohbs-full.jpg",
+    // "ohbs-full.jpg",
     // "carlos-cruz-diez.jpg",
     // "carlos-cruz-diez-2.jpg",
     // "mondrian.jpg",
@@ -29,6 +29,8 @@ async function loadImages() {
 }
 
 export async function load() {
+  document.body.classList.add("loading");
+  await new Promise((r) => setTimeout(r, 2000));
   return {
     wasm: await loadWasm(),
     js: jsTapestry,

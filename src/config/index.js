@@ -14,9 +14,10 @@ const context = {
   jsAutomata: undefined,
   automata: undefined,
   seedImages: undefined,
-  initialized: false,
+  ready: false,
   startAnimation: function startAnimation(config) {
-    if (!config || !this.initialized) return;
+    document.body.classList.remove("loading");
+    if (!config || !this.ready) return;
     if (this.automata) this.automata.pause();
     this.automata = setupAutomata(config);
     setTimeout(() => this.automata.start(), 750);
@@ -28,9 +29,10 @@ let menu;
 load().then((resources) => {
   context.wasmAutomata = resources.wasm;
   context.jsAutomata = resources.js;
-  context.seedImages = resources.img;
+  context.seedImages =
+    resources.img && resources.img.length ? resources.img : undefined;
   menu = new AutomataMenu(context);
-  context.initialized = true;
+  context.ready = true;
   context.startAnimation(menu.makeConfig());
 });
 
@@ -39,7 +41,7 @@ load().then((resources) => {
 // }, 10 * 1000);
 
 window.onresize = () => {
-  if (menu) {
+  if (menu && context.ready) {
     context.startAnimation(menu.makeConfig());
   }
 };
