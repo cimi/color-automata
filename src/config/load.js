@@ -1,10 +1,12 @@
 import WasmLoader from "../wasm-loader";
 import { wasmTapestryFactory, jsTapestry } from "../color-automata";
 
-const path = "color-automata/";
+const path = process.env.PUBLIC_URL + "/";
+console.log("Resource path:", path);
 
 async function loadWasm() {
   const wasmBinary = path + "color-automata.wasm";
+  console.log("Loading", wasmBinary);
   const wasmModule = await WasmLoader({ locateFile: () => wasmBinary });
   return wasmTapestryFactory(wasmModule);
 }

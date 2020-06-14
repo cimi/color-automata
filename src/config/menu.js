@@ -2,12 +2,12 @@ import * as dat from "dat.gui";
 import { showFpsCounter } from "./stats";
 import { randomImage, scaleImage } from "./image-generators";
 
-const randomFrom = arr => arr[Math.floor(Math.random() * arr.length)];
+const randomFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const isWebAssemblySupported = () => typeof window.WebAssembly === "object";
 const webAssemblySupported = isWebAssemblySupported();
 
 const gitHubLink = "https://github.com/cimi/color-automata";
-const toggleOctocat = enabled => {
+const toggleOctocat = (enabled) => {
   document.getElementsByClassName("github-corner")[0].style.display = enabled
     ? "block"
     : "none";
@@ -21,7 +21,7 @@ const defaults = {
   cellSize: 2, // Math.max(5, Math.floor(window.innerWidth / 1024)),
   minDist: 8,
   sepNormMag: 4.0,
-  ease: 0.67
+  ease: 0.67,
 };
 
 export default class AutomataMenu {
@@ -43,7 +43,7 @@ export default class AutomataMenu {
     const width = Math.floor(window.innerWidth / menu.cellSize);
     const height = Math.floor(window.innerHeight / menu.cellSize);
     const images = seedImages
-      ? seedImages.map(image => scaleImage(image, width, height))
+      ? seedImages.map((image) => scaleImage(image, width, height))
       : undefined;
     const img = images ? randomFrom(images) : randomImage(width, height);
     return {
@@ -53,13 +53,13 @@ export default class AutomataMenu {
       img,
       canvasId: "displayCanvas",
       debug: false,
-      automataFactory: function() {
+      automataFactory: function () {
         if (menu.runtime === "WASM") {
           return wasmAutomata(this);
         } else {
           return jsAutomata(this);
         }
-      }
+      },
     };
   }
   gitHubLink() {
@@ -80,7 +80,7 @@ export default class AutomataMenu {
   }
 }
 
-const makeGui = menu => {
+const makeGui = (menu) => {
   const gui = new dat.GUI();
 
   gui.add(menu, "fullScreen").name("Full screen");
@@ -90,12 +90,7 @@ const makeGui = menu => {
     .add(menu, "runtime", ["WASM", "JavaScript"])
     .name("Runtime")
     .listen();
-  basicTuning
-    .add(menu, "cellSize")
-    .name("Cell size")
-    .min(1)
-    .max(25)
-    .step(1);
+  basicTuning.add(menu, "cellSize").name("Cell size").min(1).max(25).step(1);
   basicTuning.add(menu, "fps", [1, 5, 10, 15, 30, 60]).name("Target FPS");
 
   // const fineTuning = basicTuning.addFolder("Fine Tuning");
@@ -107,14 +102,11 @@ const makeGui = menu => {
 
   const actions = gui.addFolder("Other Actions");
   actions.add(menu, "hide").name("Hide menu (press 'H')");
-  actions
-    .add(menu, "showFps")
-    .name("Show Browser FPS")
-    .onChange(showFpsCounter);
+  actions.add(menu, "showFps").name("Show FPS").onChange(showFpsCounter);
 
   actions
     .add(menu, "showOctocat")
-    .name("Show github corner")
+    .name("GitHub link")
     .onChange(toggleOctocat)
     .listen();
 
