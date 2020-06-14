@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/color-automata/static/css/main.22abdc39.chunk.css",
-    "main.js": "/color-automata/static/js/main.93909bf9.chunk.js",
-    "main.js.map": "/color-automata/static/js/main.93909bf9.chunk.js.map",
+    "main.js": "/color-automata/static/js/main.ddfc18f4.chunk.js",
+    "main.js.map": "/color-automata/static/js/main.ddfc18f4.chunk.js.map",
     "runtime-main.js": "/color-automata/static/js/runtime-main.a92a282f.js",
     "runtime-main.js.map": "/color-automata/static/js/runtime-main.a92a282f.js.map",
     "static/js/2.50c0e2f4.chunk.js": "/color-automata/static/js/2.50c0e2f4.chunk.js",
     "static/js/2.50c0e2f4.chunk.js.map": "/color-automata/static/js/2.50c0e2f4.chunk.js.map",
     "index.html": "/color-automata/index.html",
-    "precache-manifest.19f1383adb64fbf608ea6339dff6078d.js": "/color-automata/precache-manifest.19f1383adb64fbf608ea6339dff6078d.js",
+    "precache-manifest.ca3edbde8192a34c477a996fed5bae8d.js": "/color-automata/precache-manifest.ca3edbde8192a34c477a996fed5bae8d.js",
     "service-worker.js": "/color-automata/service-worker.js",
     "static/css/main.22abdc39.chunk.css.map": "/color-automata/static/css/main.22abdc39.chunk.css.map"
   },
@@ -16,6 +16,6 @@
     "static/js/runtime-main.a92a282f.js",
     "static/js/2.50c0e2f4.chunk.js",
     "static/css/main.22abdc39.chunk.css",
-    "static/js/main.93909bf9.chunk.js"
+    "static/js/main.ddfc18f4.chunk.js"
   ]
 }
