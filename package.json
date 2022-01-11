@@ -4,7 +4,8 @@
   "private": true,
   "dependencies": {
     "dat.gui": "^0.7.0",
-    "stats.js": "^0.17.0"
+    "stats.js": "^0.17.0",
+    "rust-automata": "file:./rust-automata/pkg"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^6.0.2",
