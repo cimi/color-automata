@@ -2,6 +2,15 @@ mod utils;
 
 use wasm_bindgen::prelude::*;
 
+// cannot generate random numbers:
+// WARNING in ../rust-automata/pkg/rust_automata_bg.js 130:14-60
+// Critical dependency: the request of a dependency is an expression
+// @ ../rust-automata/pkg/rust_automata_bg.wasm
+// @ ./index.js
+// @ ./bootstrap.js
+// use rand::prelude::*;
+
+
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
 #[cfg(feature = "wee_alloc")]
@@ -19,7 +28,7 @@ pub fn greet() {
 }
 
 // Define the size of our "checkerboard"
-const CHECKERBOARD_SIZE: usize = 20;
+const CHECKERBOARD_SIZE: usize = 1000;
 
 /*
  * 1. What is going on here?
@@ -58,7 +67,6 @@ pub fn generate_checker_board(
     light_value_green: u8,
     light_value_blue: u8
     ) {
-
     // Since Linear memory is a 1 dimensional array, but we want a grid
     // we will be doing 2d to 1d mapping
     // https://softwareengineering.stackexchange.com/questions/212808/treating-a-1d-data-structure-as-2d-grid
