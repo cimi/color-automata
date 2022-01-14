@@ -1,6 +1,9 @@
 import * as wasm from "rust-automata/rust_automata_bg.wasm";
+import Stats from "stats.js";
 
-wasm.greet();
+// wasm.greet();
+const stats = new Stats();
+document.body.appendChild(stats.dom);
 
 // Create a Uint8Array to give us access to Wasm Memory
 const wasmByteMemoryArray = new Uint8Array(wasm.memory.buffer);
@@ -26,7 +29,7 @@ const getLightValue = () => {
 };
 
 const drawCheckerBoard = () => {
-  const checkerBoardSize = 20;
+  const checkerBoardSize = 1000;
 
   // Generate a new checkboard in wasm
   wasm.generate_checker_board(
@@ -46,7 +49,6 @@ const drawCheckerBoard = () => {
     outputPointer,
     outputPointer + checkerBoardSize * checkerBoardSize * 4
   );
-
   // Set the values to the canvas image data
   canvasImageData.data.set(imageDataArray);
 
@@ -55,8 +57,8 @@ const drawCheckerBoard = () => {
 
   // Place the new generated checkerboard onto the canvas
   canvasContext.putImageData(canvasImageData, 0, 0);
+  stats.update();
+  window.requestAnimationFrame(drawCheckerBoard);
 };
-drawCheckerBoard();
-setInterval(() => {
-  drawCheckerBoard();
-}, 1000);
+
+requestAnimationFrame(drawCheckerBoard);
