@@ -14,6 +14,7 @@ default = ["console_error_panic_hook"]
 rand = "0.8"
 getrandom = { version = "0.2", features = ["js"] }
 wasm-bindgen = "0.2.63"
+cgmath = "0.18.0"
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires

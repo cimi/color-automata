@@ -1,5 +1,6 @@
 mod utils;
-
+mod automata;
+use crate::automata::State;
 use wasm_bindgen::prelude::*;
 
 // cannot generate random numbers:
@@ -43,6 +44,7 @@ const CHECKERBOARD_SIZE: usize = 1000;
  * Which, the Canvas API Supports.
  */
 const OUTPUT_BUFFER_SIZE: usize = CHECKERBOARD_SIZE * CHECKERBOARD_SIZE * 4;
+static mut state: State = State::new();
 static mut OUTPUT_BUFFER: [u8; OUTPUT_BUFFER_SIZE] = [0; OUTPUT_BUFFER_SIZE];
 
 // Function to return a pointer to our buffer
@@ -104,9 +106,10 @@ pub fn generate_checker_board(
 
             // Finally store the values.
             unsafe {
-                OUTPUT_BUFFER[square_rgba_index + 0] = square_value_red; // Red
-                OUTPUT_BUFFER[square_rgba_index + 1] = square_value_green; // Green
-                OUTPUT_BUFFER[square_rgba_index + 2] = square_value_blue; // Blue
+                let particle = state.particles[square_number];
+                OUTPUT_BUFFER[square_rgba_index + 0] = particle.position.x; // Red
+                OUTPUT_BUFFER[square_rgba_index + 1] = particle.position.y; // Green
+                OUTPUT_BUFFER[square_rgba_index + 2] = particle.position.z; // Blue
                 OUTPUT_BUFFER[square_rgba_index + 3] = 255; // Alpha (Always Opaque)
             }
         }
