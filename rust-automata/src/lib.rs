@@ -1,6 +1,3 @@
-mod utils;
-mod automata;
-use crate::automata::State;
 use wasm_bindgen::prelude::*;
 
 // cannot generate random numbers:
@@ -32,27 +29,15 @@ pub fn greet() {
 const GRID_SIZE_X: usize = 1024;
 const GRID_SIZE_Y: usize = 1024;
 const GRID_SIZE: usize = GRID_SIZE_X * GRID_SIZE_Y;
-/*
- * 1. What is going on here?
- * Create a static mutable byte buffer.
- * We will use for putting the output of our graphics,
- * to pass the output to js.
+
+const OUTPUT_BUFFER_SIZE: usize = GRID_SIZE * 4;
+/**
  * NOTE: global `static mut` means we will have "unsafe" code
  * but for passing memory between js and wasm should be fine.
- *
- * 2. Why is the size CHECKERBOARD_SIZE * CHECKERBOARD_SIZE * 4?
- * We want to have 20 pixels by 20 pixels. And 4 colors per pixel (r,g,b,a)
- * Which, the Canvas API Supports.
  */
-const OUTPUT_BUFFER_SIZE: usize = GRID_SIZE * 4;
-
 static mut OUTPUT_BUFFER: [u8; OUTPUT_BUFFER_SIZE] = [0; OUTPUT_BUFFER_SIZE];
-static mut VELOCITY_BUFFER: [u8; OUTPUT_BUFFER_SIZE] = [0; OUTPUT_BUFFER_SIZE];
-static mut SECONDARY: [u8; OUTPUT_BUFFER_SIZE] = [0; OUTPUT_BUFFER_SIZE];
-static mut VELOCITY_SECONDARY: [u8; OUTPUT_BUFFER_SIZE] = [0; OUTPUT_BUFFER_SIZE];
 
-// Function to return a pointer to our buffer
-// in wasm memory
+// Return a pointer to the buffer in wasm memory
 #[wasm_bindgen]
 pub fn get_output_buffer_pointer() -> *const u8 {
     let pointer: *const u8;
@@ -68,7 +53,7 @@ fn get_idx(x: usize, y: usize) -> usize {
 }
 
 fn get_val(x: i32, y: i32) -> bool {
-    if (x < 0 || y < 0 || x >= GRID_SIZE_X as i32 || y >= GRID_SIZE_Y as i32) {
+    if x < 0 || y < 0 || x >= GRID_SIZE_X as i32 || y >= GRID_SIZE_Y as i32 {
         return true;
     }
     unsafe {
@@ -80,7 +65,7 @@ fn compute(x: i32, y: i32) -> bool {
     let p1 = get_val(x - 1, y - 1);
     let p2 = get_val(x, y - 1);
     let p3 = get_val(x + 1, y - 1);
-    if ((p1 && !p2 && !p3) || (p1 == p2 && p2 == p3)) {
+    if (p1 && !p2 && !p3) || (p1 == p2 && p2 == p3) {
         return false;
     } else {
         return true;
@@ -108,9 +93,9 @@ fn set_off(x: usize, y: usize) {
     }
 }
 
-// Function to generate our checkerboard, pixel by pixel
+// Function to generate our image, pixel by pixel
 #[wasm_bindgen]
-pub fn generate_checker_board(
+pub fn generate_image(
     r: u8,
     g: u8,
     b: u8,
@@ -121,15 +106,7 @@ pub fn generate_checker_board(
             break;
         }
         for x in 0..GRID_SIZE_X {
-            let square_number: usize = y * GRID_SIZE_X + x;
-            let square_rgba_index: usize = square_number * 4;
-            // 00010011011111
             if y == 0 {
-                // if compute(x as i32, (CHECKERBOARD_SIZE - 1) as i32) {
-                //     set_on(x, y);
-                // } else {
-                //     set_off(x, y);
-                // }
                 set_off(x, y);
             } else {
                 if compute(x as i32, y as i32) {

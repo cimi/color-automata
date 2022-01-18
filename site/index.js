@@ -29,15 +29,10 @@ let currentRow = 1;
 const drawCheckerBoard = () => {
   const gridSize = canvasWidth * canvasHeight;
   const color = d3Color(
-    interpolateMagma((Math.sin(Date.now() / (2 * 10e3)) + 1) / 2)
+    interpolateMagma((Math.sin(Date.now() / 10e3) + 1) / 2)
   );
   // Generate a new checkboard in wasm
-  wasm.generate_checker_board(
-    color.r,
-    color.g,
-    color.b,
-    (currentRow % gridSize) + 1
-  );
+  wasm.generate_image(color.r, color.g, color.b, (currentRow % gridSize) + 1);
 
   // Pull out the RGBA values from Wasm memory
   // Starting at the memory index of out output buffer (given by our pointer)
