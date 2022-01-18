@@ -48,7 +48,7 @@ pub struct State {
 }
 
 impl State {
-  pub const fn new() -> State {
+  pub fn new() -> State {
     State {
       particles: vec![Particle::default(); RES_4K]
     }

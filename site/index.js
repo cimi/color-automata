@@ -1,4 +1,6 @@
 import * as wasm from "rust-automata/rust_automata_bg.wasm";
+import { interpolateMagma } from "d3-scale-chromatic";
+import { color as d3Color } from "d3-color";
 import Stats from "stats.js";
 
 // wasm.greet();
@@ -13,32 +15,28 @@ const canvasElement = document.querySelector("canvas");
 
 // Set up Context and ImageData on the canvas
 const canvasContext = canvasElement.getContext("2d");
+const canvasWidth = 1024;
+const canvasHeight = 1024;
 const canvasImageData = canvasContext.createImageData(
-  canvasElement.width,
-  canvasElement.height
+  canvasWidth,
+  canvasHeight
 );
-
+canvasElement.width = canvasWidth;
+canvasElement.height = canvasHeight;
 // Clear the canvas
 canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height);
-const getDarkValue = () => {
-  return Math.floor(Math.random() * 100);
-};
-
-const getLightValue = () => {
-  return Math.floor(Math.random() * 127) + 127;
-};
-
+let currentRow = 1;
 const drawCheckerBoard = () => {
-  const checkerBoardSize = 1000;
-
+  const gridSize = canvasWidth * canvasHeight;
+  const color = d3Color(
+    interpolateMagma((Math.sin(Date.now() / (2 * 10e3)) + 1) / 2)
+  );
   // Generate a new checkboard in wasm
   wasm.generate_checker_board(
-    getDarkValue(),
-    getDarkValue(),
-    getDarkValue(),
-    getLightValue(),
-    getLightValue(),
-    getLightValue()
+    color.r,
+    color.g,
+    color.b,
+    (currentRow % gridSize) + 1
   );
 
   // Pull out the RGBA values from Wasm memory
@@ -47,9 +45,10 @@ const drawCheckerBoard = () => {
   const outputPointer = wasm.get_output_buffer_pointer();
   const imageDataArray = wasmByteMemoryArray.slice(
     outputPointer,
-    outputPointer + checkerBoardSize * checkerBoardSize * 4
+    outputPointer + gridSize * 4
   );
   // Set the values to the canvas image data
+
   canvasImageData.data.set(imageDataArray);
 
   // Clear the canvas
@@ -59,6 +58,7 @@ const drawCheckerBoard = () => {
   canvasContext.putImageData(canvasImageData, 0, 0);
   stats.update();
   window.requestAnimationFrame(drawCheckerBoard);
+  currentRow += 3;
 };
 
 requestAnimationFrame(drawCheckerBoard);

@@ -28,6 +28,8 @@
   "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
   "devDependencies": {
     "rust-automata": "file:../rust-automata/pkg",
+    "d3-color": "^3.0.1",
+    "d3-scale-chromatic": "^3.0.0",
     "stats.js": "^0.17.0",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.1.0",
